@@ -1,6 +1,6 @@
 test circuit
 .include cpe.cir
-v1 0 1 ac 1v
+v1 0 1 ac 1
 x1 1 2 cpe
 v2 2 3 0v
-r2 3 0 1e-9
+r1 3 0 1
