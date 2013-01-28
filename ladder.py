@@ -4,7 +4,7 @@ import numpy
 alpha = float(raw_input('alpha = '))
 n = 1000 #int(raw_input('n = '))
 d_p = float(raw_input('d_p = '))
-cpe = str(raw_input('name ='))
+cpe = str(raw_input('name = '))
 
 f_low = 1e-6
 f_high = 1e12
@@ -39,7 +39,7 @@ print 'fixed c_k = %s' % c_k
 
 f = open('%s.cir' % cpe, 'w')
 print >> f, '.subckt '+ cpe + ' in out'
-print >> f, '* ' + 'alpha= ' + '%s' %alpha + ',n= ' + '%s' %n + ',flow= ' + '%s' %f_low + ',fhigh= ' + '%s' %f_high + ',D= ' + '%s' %d_p
+print >> f, '* alpha=%s n=%s f_low=%s f_high=%s' % (alpha, n, f_low, f_high)
 
 i = 0
 for r, c in zip(r_k, c_k):
