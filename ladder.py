@@ -2,10 +2,10 @@ import math
 import numpy
 
 alpha = float(raw_input('alpha = '))
-n = 1000 #int(raw_input('n = '))
 d_p = float(raw_input('d_p = '))
 cpe = str(raw_input('name = '))
 
+n = 1000
 f_low = 1e-6
 f_high = 1e12
 pi = math.pi
