@@ -5,7 +5,7 @@ import tempfile
 import ladder
 
 
-def generate(k, R_seal, A_intra, A_env, A_membrane, A_extra, **kwargs):
+def generate(filename, alpha, k, R_seal, A_intra, A_env, A_membrane, A_extra, **kwargs):
 
     # Run gnetlist to create a netlist from the model1 schematic.
     def run_netlister(fn):
@@ -52,15 +52,29 @@ def generate(k, R_seal, A_intra, A_env, A_membrane, A_extra, **kwargs):
         place(Rmembranei, i, Rseali_out, 'cell_bus')
         place(Cmembranei, i, Rseali_out, 'cell_bus')
     
+    # Make the CPEs. TODO make alpha and d_p free params.
+    fn, extra_cpe = ladder.generate(alpha, k / A_extra, 'generated/cpe_extra.cir')
+    netlist.insert(1, '.include %s' % fn)
+    fn, intra_cpe = ladder.generate(alpha, k / A_intra, 'generated/cpe_intra.cir')
+    netlist.insert(1, '.include %s' % fn)
+    fn, sheathed_cpe = ladder.generate(alpha, k / (A_env + 1e-30), 'generated/cpe_sheathed.cir')
+    netlist.insert(1, '.include %s' % fn)
+
     # Find variables.
     S_tm = 0.1
     values = {
-        'Rwholecell': 1,
-        'Cwholecell': 1,
-        'Xextracpe': k * A_extra,
-        'Xintracpe': k * A_intra,
-        'Xsheathedcpe_i': lambda _: '',
-        'Rmembrane_i': lambda _: N_compartments / (S_tm * A_membrane),
+        # TODO make these into free params.
+        'Rpara': 1e14,
+        'Cpara': 4e-12,
+        'Rpene': 1e9,
+        'Rwholecell': 1e8,
+        'Cwholecell': 1e-9,
+        'Rsoln': 200,
+        
+        'Xextracpe': extra_cpe,
+        'Xintracpe': intra_cpe,
+        'Xsheathedcpe_i': lambda _: sheathed_cpe,
+        'Rmembrane_i': lambda _: N_compartments / (S_tm * A_membrane) if A_membrane > 0 else 1e20,
         'Cmembrane_i': lambda _: (A_membrane * 0.01) / N_compartments,
         'Rseal_i': lambda _: R_seal / N_compartments
         }
@@ -75,9 +89,13 @@ def generate(k, R_seal, A_intra, A_env, A_membrane, A_extra, **kwargs):
                 v = values[c]
             netlist[i] = n.replace(missing, str(v))
 
-    # Add the cell voltage model.
+    # Add the cell voltage model, and fixup the connections for the
+    # Acell.
+    Acell = get_component('Acell', strip=True)
+    assert len(Acell) == 4
+    netlist.append('%s %%vd([%s, %s]) %s' % tuple(Acell))
     netlist.append('\n.model cell_potential filesource (file="spike.dat", amploffset=[0], amplscale=[1])')
 
-    f = open('out.cir', 'w')
+    f = open(filename, 'w')
     f.write('\n'.join(netlist))
     f.close()

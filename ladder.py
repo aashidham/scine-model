@@ -1,7 +1,9 @@
 import math
 import numpy
+import re
 
-def generate(alpha, d_p, name):
+
+def generate(alpha, d_p, filename):
 
     n = 1000
     f_low = 1e-6
@@ -31,8 +33,11 @@ def generate(alpha, d_p, name):
 
     # Output circuit.
 
-    f = open('%s.cir' % cpe, 'w')
-    print >> f, '.subckt '+ cpe + ' in out'
+    f = open(filename, 'w')
+    m = re.search('(\/?)([^\/]+).cir$', filename)
+    assert m
+    name = m.group(2)
+    print >> f, '.subckt ' + name + ' in out'
     print >> f, '* alpha=%s n=%s f_low=%s f_high=%s' % (alpha, n, f_low, f_high)
 
     i = 0
@@ -45,3 +50,5 @@ def generate(alpha, d_p, name):
     print >> f, 'cP in out %s' % c_p
 
     print >> f, '.ends'
+
+    return filename, name

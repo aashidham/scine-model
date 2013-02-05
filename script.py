@@ -27,25 +27,30 @@ class LinearProgression(object):
             raise StopIteration()
 
 
-def insert_scine(fig, steps, L, d, k_pene, k_deform, model):
-
-    # Time goes from 1 (not 0, because then A_membrane=0 at t=0) to
-    # however long.
-    T = [(L / (k_pene + k_deform)) * (i / float(steps)) for i in range(1, steps)]
+def insert_scine(fig, L, d, deformability, model):
 
     # The length of the electrode inside of, enveloped by, and outside
     # of the cell over time.
-    L_intra = [k_pene * t for t in T]
-    L_env = [k_deform * t for t in T]
-    L_extra = [L - intra - env for intra, env in zip(L_intra, L_env)]
-
-    p = fig.add_subplot(2, 2, 1)
-    p.set_title('Electrode length')
-    p.ticklabel_format(style='sci', axis='x', scilimits=(0,0))
-    p.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
-    p.set_ylabel('m')
-    p.plot(T, L_extra, 'r', T, L_intra, 'g', T, L_env, 'b')
-    p.legend(['L_extra', 'L_intra', 'L_env'])
+    # Kenv / Kpene = deformability , Kenv + Kpene = 1
+    assert (deformability > 0) and (deformability < 1)
+    L_intra = []
+    L_env = []
+    L_extra = []
+    T = []
+    t = 0
+    while True:
+        k_env = deformability / (1 + deformability)
+        L_env.append(k_env * t)
+        L_intra.append((1 - k_env) * t)
+        L_extra.append(L - t)
+        T.append(t)
+        if L_extra[-1] <= 0:
+            L_env.pop()
+            L_intra.pop()
+            L_extra.pop()
+            T.pop()
+            break
+        t += 1000e-9 # TODO HELP 1e-9
 
     # The surface area of the electrode inside of, enveloped by, and
     # outside of the cell over time.
@@ -54,6 +59,14 @@ def insert_scine(fig, steps, L, d, k_pene, k_deform, model):
     A_intra = [cap + (A_per_L * l) for l in L_intra]
     A_env = [A_per_L * l for l in L_env]
     A_extra = [A_per_L * l for l in L_extra]
+
+    p = fig.add_subplot(2, 2, 1)
+    p.set_title('Electrode length')
+    p.ticklabel_format(style='sci', axis='x', scilimits=(0,0))
+    p.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
+    p.set_ylabel('m')
+    p.plot(T, L_extra, 'r', T, L_intra, 'g', T, L_env, 'b')
+    p.legend(['L_extra', 'L_intra', 'L_env'])
 
     # The surface area of the membrane enveloping the electrode over
     # time, where the enveloping membrane is a cylinder with diameter
@@ -69,22 +82,28 @@ def insert_scine(fig, steps, L, d, k_pene, k_deform, model):
     p.plot(T, A_extra, 'r', T, A_intra, 'g', T, A_env, 'b', T, A_membrane, 'y')
     p.legend(['A_extra', 'A_intra', 'A_env', 'A_membrane'])
 
-    # The seal resistance over time.
+    # The seal resistance over time. TODO We'll insert a free
+    # parameter here later. neher
     R_seal = [10e9 * l / (d * math.pi) for l in L_env]
 
-    for i in range(steps):
+    for i in range(len(T)):
         spice = model.generate(
-            5,
+            'generated/model1_t=%s.cir' % T[i],
+            # TODO alpha, k should be free params
+            0.5, 10,
             R_seal[i],
             A_intra[i],
             A_env[i],
             A_membrane[i],
             A_extra[i]
             )
-        spice.run()
+        #spice.run()
 
 
 import model1
 
 fig = plt.figure()
-insert_scine(fig, 1000, 5000e-9, 500e-9, 2, 1, model1)
+insert_scine(fig, 5000e-9, 500e-9, 0.5, model1)
+#fig.show()
+#while True:
+#    pass
