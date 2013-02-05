@@ -54,9 +54,11 @@ C 44000 49600 1 90 0 resistor-2.sym
 T 43650 50000 5 10 0 0 90 0 1
 device=CPE
 T 43700 49800 5 10 0 1 90 0 1
-refdes=Xsheathedcpei
+refdes=Xsheathedcpe_i
 T 44200 49700 5 10 1 0 90 0 1
 file=sheathed_cpe_i.cir
+T 44200 49700 5 10 1 0 90 0 1
+pinseq=1,2
 }
 N 43900 50500 43900 50600 4
 N 43900 49100 43900 49600 4
@@ -65,7 +67,7 @@ C 44300 49400 1 0 0 resistor-1.sym
 T 44600 49800 5 10 0 0 0 0 1
 device=RESISTOR
 T 44500 49700 5 10 1 1 0 0 1
-refdes=Rseali
+refdes=Rseal_i
 }
 C 45700 49600 1 90 0 resistor-2.sym
 {
@@ -108,7 +110,7 @@ C 44500 48200 1 90 0 capacitor-1.sym
 T 43800 48400 5 10 0 0 90 0 1
 device=CAPACITOR
 T 44000 48400 5 10 1 1 90 0 1
-refdes=Cmembranei
+refdes=Cmembrane_i
 T 43600 48400 5 10 0 0 90 0 1
 symversion=0.1
 }
@@ -117,7 +119,7 @@ C 43600 48200 1 90 0 resistor-1.sym
 T 43200 48500 5 10 0 0 90 0 1
 device=RESISTOR
 T 43300 48400 5 10 1 1 90 0 1
-refdes=Rmembranei
+refdes=Rmembrane_i
 }
 N 43500 49100 44300 49100 4
 N 43500 48200 44300 48200 4

@@ -2,11 +2,36 @@ import math
 import matplotlib.pyplot as plt
 import string
 
-def insert_scine(tmpl, fig, L, d, k_pene, k_deform):
+import model1
 
-    # Time goes from 0 to however long
-    steps = 1000
-    T = [(L / (k_pene + k_deform)) * (i / float(steps)) for i in range(steps)]
+
+class LinearProgression(object):
+
+    def __init__(self, low, high, n_samples):
+        assert high > low
+        self._low = float(low)
+        self._high = float(high)
+        assert (type(n_samples) == int) and (n_samples > 1)
+        self._n_samples = n_samples
+        self._i = 0
+
+    def __iter__(self):
+        return self
+
+    def next(self):
+        if self._i < self._n_samples:
+            v = (self._i * (self._high - self._low) / (self._n_samples - 1)) + self._low
+            self._i += 1
+            return v
+        else:
+            raise StopIteration()
+
+
+def insert_scine(fig, steps, L, d, k_pene, k_deform, model):
+
+    # Time goes from 1 (not 0, because then A_membrane=0 at t=0) to
+    # however long.
+    T = [(L / (k_pene + k_deform)) * (i / float(steps)) for i in range(1, steps)]
 
     # The length of the electrode inside of, enveloped by, and outside
     # of the cell over time.
@@ -26,7 +51,7 @@ def insert_scine(tmpl, fig, L, d, k_pene, k_deform):
     # outside of the cell over time.
     cap = math.pi * pow(d / 2.0, 2)
     A_per_L = math.pi * d
-    A_intra = [(cap if l > 0 else 0) + (A_per_L * l) for l in L_intra]
+    A_intra = [cap + (A_per_L * l) for l in L_intra]
     A_env = [A_per_L * l for l in L_env]
     A_extra = [A_per_L * l for l in L_extra]
 
@@ -47,16 +72,19 @@ def insert_scine(tmpl, fig, L, d, k_pene, k_deform):
     # The seal resistance over time.
     R_seal = [10e9 * l / (d * math.pi) for l in L_env]
 
-    #eei_circuit(q0=50000, n=0.5)
+    for i in range(steps):
+        spice = model.generate(
+            5,
+            R_seal[i],
+            A_intra[i],
+            A_env[i],
+            A_membrane[i],
+            A_extra[i]
+            )
+        spice.run()
 
-tmpl = string.Template(open('eei.cir', 'r').read())
-def eei_circuit(**kwargs):
-    fn = ''
-    for k, v in kwargs.items():
-        fn = '%s%s_%s' % (fn + '__' if fn else '', k, str(v))
-    open('eei/%s.cir' % fn, 'w').write(tmpl.substitute(kwargs))
+
+import model1
 
 fig = plt.figure()
-insert_scine(tmpl, fig, 5000e-9, 500e-9, 2, 1)
-fig.show()
-raw_input('enter to continue')
+insert_scine(fig, 1000, 5000e-9, 500e-9, 2, 1, model1)
