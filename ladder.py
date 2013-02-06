@@ -3,7 +3,7 @@ import numpy
 import re
 
 
-def generate(alpha, d_p, filename):
+def generate(alpha, d_p, path):
 
     n = 1000
     f_low = 1e-6
@@ -33,8 +33,9 @@ def generate(alpha, d_p, filename):
 
     # Output circuit.
 
-    f = open(filename, 'w')
-    m = re.search('(\/?)([^\/]+).cir$', filename)
+    path = '%s/cpe_alpha@%s_d_p@%s.cir' % (path, alpha, d_p)
+    f = open(path, 'w')
+    m = re.search('(\/?)([^\/]+).cir$', path)
     assert m
     name = m.group(2)
     print >> f, '.subckt ' + name + ' in out'
@@ -51,4 +52,4 @@ def generate(alpha, d_p, filename):
 
     print >> f, '.ends'
 
-    return filename, name
+    return path, name

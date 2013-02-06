@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import string
 
 import model1
+import util
 
 
 class LinearProgression(object):
@@ -88,7 +89,7 @@ def insert_scine(fig, L, d, deformability, model):
 
     for i in range(len(T)):
         spice = model.generate(
-            'generated/model1_t=%s.cir' % T[i],
+            'generated/model1_L@%s_d@%s_deformability@%s_t@%s.cir' % (L, d, deformability, T[i]),
             # TODO alpha, k should be free params
             0.5, 10,
             R_seal[i],
