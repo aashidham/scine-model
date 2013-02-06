@@ -53,11 +53,11 @@ def generate(filename, alpha, k, R_seal, A_intra, A_env, A_membrane, A_extra, **
         place(Cmembranei, i, Rseali_out, 'cell_bus')
     
     # Make the CPEs. TODO make alpha and d_p free params.
-    path, extra_cpe = ladder.generate(alpha, k / A_extra, 'generated')
+    path, extra_cpe = ladder.generate(50, alpha, k / A_extra, 'generated')
     netlist.insert(1, '.include %s' % path)
-    path, intra_cpe = ladder.generate(alpha, k / A_intra, 'generated')
+    path, intra_cpe = ladder.generate(50, alpha, k / A_intra, 'generated')
     netlist.insert(1, '.include %s' % path)
-    path, sheathed_cpe = ladder.generate(alpha, k / (A_env + 1e-30), 'generated')
+    path, sheathed_cpe = ladder.generate(50, alpha, k / (A_env + 1e-30), 'generated')
     netlist.insert(1, '.include %s' % path)
 
     # Find variables.

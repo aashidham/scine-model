@@ -1,11 +1,11 @@
 import math
 import numpy
+import os.path
 import re
 
 
-def generate(alpha, d_p, path):
+def generate(n, alpha, d_p, path):
 
-    n = 1000
     f_low = 1e-6
     f_high = 1e12
     pi = math.pi
@@ -33,7 +33,7 @@ def generate(alpha, d_p, path):
 
     # Output circuit.
 
-    path = '%s/cpe_alpha@%s_d_p@%s.cir' % (path, alpha, d_p)
+    path = os.path.join(path, 'cpe_alpha@%s_d_p@%s.cir' % (alpha, d_p))
     f = open(path, 'w')
     m = re.search('(\/?)([^\/]+).cir$', path)
     assert m
@@ -53,3 +53,11 @@ def generate(alpha, d_p, path):
     print >> f, '.ends'
 
     return path, name
+
+
+if __name__ == '__main__':
+    import sys
+    import tempfile
+
+    filename, _ = generate(int(sys.argv[1]), float(sys.argv[2]), float(sys.argv[3]), '')
+    print filename
