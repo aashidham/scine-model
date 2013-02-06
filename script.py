@@ -96,7 +96,8 @@ def insert_scine(fig, L, d, deformability, model):
             A_intra[i],
             A_env[i],
             A_membrane[i],
-            A_extra[i]
+            A_extra[i],
+            "spike.short.dat"
             )
         #spice.run()
 

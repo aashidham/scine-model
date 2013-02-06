@@ -5,7 +5,7 @@ import tempfile
 import ladder
 
 
-def generate(filename, alpha, k, R_seal, A_intra, A_env, A_membrane, A_extra, **kwargs):
+def generate(filename, alpha, k, R_seal, A_intra, A_env, A_membrane, A_extra, data_path):
 
     # Run gnetlist to create a netlist from the model1 schematic.
     def run_netlister(fn):
@@ -94,7 +94,7 @@ def generate(filename, alpha, k, R_seal, A_intra, A_env, A_membrane, A_extra, **
     Acell = get_component('Acell', strip=True)
     assert len(Acell) == 4
     netlist.append('%s %%vd([%s, %s]) %s' % tuple(Acell))
-    netlist.append('\n.model cell_potential filesource (file="spike.dat", amploffset=[0], amplscale=[1])')
+    netlist.append('\n.model cell_potential filesource (file="%s", amploffset=[0], amplscale=[1])' % data_path)
 
     f = open(filename, 'w')
     f.write('\n'.join(netlist))
