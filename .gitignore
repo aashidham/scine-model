@@ -1,4 +1,5 @@
 *~
 *.pyc
 \#*\#
-eei/
+data/
+generated/

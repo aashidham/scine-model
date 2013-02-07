@@ -99,3 +99,5 @@ def generate(filename, alpha, k, R_seal, A_intra, A_env, A_membrane, A_extra, da
     f = open(filename, 'w')
     f.write('\n'.join(netlist))
     f.close()
+
+    return filename

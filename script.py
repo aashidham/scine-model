@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import string
 
 import model1
-import util
+import spice
 
 
 class LinearProgression(object):
@@ -88,7 +88,7 @@ def insert_scine(fig, L, d, deformability, model):
     R_seal = [10e9 * l / (d * math.pi) for l in L_env]
 
     for i in range(len(T)):
-        spice = model.generate(
+        cir_path = model.generate(
             'generated/model1_L@%s_d@%s_deformability@%s_t@%s.cir' % (L, d, deformability, T[i]),
             # TODO alpha, k should be free params
             0.5, 10,
@@ -99,7 +99,10 @@ def insert_scine(fig, L, d, deformability, model):
             A_extra[i],
             "spike.short.dat"
             )
-        #spice.run()
+        spice.run(cir_path, {
+                'transient_step': 1e-5,
+                'transient_max_T': 0.02
+                })
 
 
 import model1

@@ -98,7 +98,7 @@ netname=solution_bus
 }
 N 42200 47800 43900 47800 4
 {
-T 42200 47800 5 10 1 1 0 0 1
+T 42200 47900 5 10 1 1 0 0 1
 netname=cell_bus
 }
 C 44500 48200 1 90 0 capacitor-1.sym
