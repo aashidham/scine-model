@@ -11,7 +11,6 @@ def generate(filename, alpha, k, R_seal, A_intra, A_env, A_membrane, A_extra, da
     def run_netlister(fn):
         _, netlist_fn = tempfile.mkstemp()
         p = subprocess.Popen(['gnetlist', '-n', '-g', 'spice', fn, '-o', netlist_fn], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        print netlist_fn
         _, err = p.communicate()
         assert err == '', err
         return netlist_fn
@@ -59,6 +58,8 @@ def generate(filename, alpha, k, R_seal, A_intra, A_env, A_membrane, A_extra, da
     netlist.insert(1, '.include %s' % path)
     path, sheathed_cpe = ladder.generate(50, alpha, k / (A_env + 1e-30), 'generated')
     netlist.insert(1, '.include %s' % path)
+
+    netlist.insert(0, '* alpha=%s k=%s R_seal=%s A_intra=%s A_env=%s A_membrane=%s A_extra=%s' % (alpha, k, R_seal, A_intra, A_env, A_membrane, A_extra))
 
     # Find variables.
     S_tm = 0.1

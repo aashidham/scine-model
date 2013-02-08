@@ -38,10 +38,11 @@ def insert_scine(fig, L, d, deformability, model):
     L_extra = []
     T = []
     t = 0
+    k_env = deformability / float(1 + deformability)
+    k_pene = 1 - k_env
     while True:
-        k_env = deformability / (1 + deformability)
         L_env.append(k_env * t)
-        L_intra.append((1 - k_env) * t)
+        L_intra.append(k_pene * t)
         L_extra.append(L - t)
         T.append(t)
         if L_extra[-1] <= 0:
@@ -88,7 +89,7 @@ def insert_scine(fig, L, d, deformability, model):
 
     for i in range(len(T)):
         cir_path = model.generate(
-            'generated/model1_L@%s_d@%s_deformability@%s_t@%s.cir' % (L, d, deformability, T[i]),
+            'generated/model1_L@%s_d@%s_deformability@%s_kenv=%s_kpene=%s_t@%s.cir' % (L, d, deformability, k_env, k_pene, T[i]),
             # TODO alpha, k should be free params
             0.5, 0.14,
             R_seal[i],
@@ -98,6 +99,7 @@ def insert_scine(fig, L, d, deformability, model):
             A_extra[i],
             "spike.short.dat"
             )
+
         #spice.run(cir_path, {
         #        'transient_step': 1e-5,
         #        'transient_max_T': 0.02
@@ -107,7 +109,7 @@ def insert_scine(fig, L, d, deformability, model):
 import model1
 
 fig = plt.figure()
-insert_scine(fig, 5000e-9, 500e-9, 0.000000001, model1)
+insert_scine(fig, 6000e-9, 500e-9, 999999999, model1)
 #fig.show()
 #while True:
 #    pass
