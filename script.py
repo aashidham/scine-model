@@ -33,7 +33,6 @@ def insert_scine(fig, L, d, deformability, model):
     # The length of the electrode inside of, enveloped by, and outside
     # of the cell over time.
     # Kenv / Kpene = deformability , Kenv + Kpene = 1
-    assert (deformability > 0) and (deformability < 1)
     L_intra = []
     L_env = []
     L_extra = []
@@ -57,8 +56,8 @@ def insert_scine(fig, L, d, deformability, model):
     # outside of the cell over time.
     cap = math.pi * pow(d / 2.0, 2)
     A_per_L = math.pi * d
-    A_intra = [cap + (A_per_L * l) for l in L_intra]
-    A_env = [A_per_L * l for l in L_env]
+    A_intra = [cap + (A_per_L * l) if l > 0 else 0 for l in L_intra]
+    A_env = [A_per_L * l if l > 0 else 0 for l in L_env]
     A_extra = [A_per_L * l for l in L_extra]
 
     p = fig.add_subplot(2, 2, 1)
