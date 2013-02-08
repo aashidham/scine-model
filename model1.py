@@ -5,7 +5,7 @@ import tempfile
 import ladder
 
 
-def generate(filename, alpha, k, R_seal, A_intra, A_env, A_membrane, A_extra, data_path):
+def generate(filename, alpha, k, R_seal, R_pene, A_intra, A_env, A_membrane, A_extra, data_path):
 
     # Run gnetlist to create a netlist from the model1 schematic.
     def run_netlister(fn):
@@ -65,9 +65,9 @@ def generate(filename, alpha, k, R_seal, A_intra, A_env, A_membrane, A_extra, da
     S_tm = 0.1
     values = {
         # TODO make these into free params.
-        'Rpara': 1e20,
-        'Cpara': 1e-20,
-        'Rpene': 1e20,
+        'Rpara': 1e12,
+        'Cpara': 4e-12,
+        'Rpene': R_pene,
         'Rwholecell': 1e8,
         'Cwholecell': 2e-10,
         'Rsoln': 200,

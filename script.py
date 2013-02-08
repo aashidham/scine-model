@@ -28,7 +28,7 @@ class LinearProgression(object):
             raise StopIteration()
 
 
-def insert_scine(fig, L, d, deformability, neher, model):
+def insert_scine(fig, L, t_step, d, deformability, neher, model):
 
     # The length of the electrode inside of, enveloped by, and outside
     # of the cell over time.
@@ -51,7 +51,7 @@ def insert_scine(fig, L, d, deformability, neher, model):
             L_extra.pop()
             T.pop()
             break
-        t += 1000e-9 # TODO HELP 1e-9
+        t += t_step
 
     # The surface area of the electrode inside of, enveloped by, and
     # outside of the cell over time.
@@ -89,10 +89,11 @@ def insert_scine(fig, L, d, deformability, neher, model):
 
     for i in range(len(T)):
         cir_path = model.generate(
-            'generated/model1_L@%s_d@%s_deformability@%s_kenv=%s_kpene=%s_t@%s.cir' % (L, d, deformability, k_env, k_pene, T[i]),
+            'generated/model1_L@%s_d@%s_deformability@%s_neher@%s_t@%s.cir' % (L, d, deformability, neher, T[i]),
             # TODO alpha, k should be free params
             0.5, 0.14,
             R_seal[i],
+            1e20 if i > 0 else 1e9,
             A_intra[i],
             A_env[i],
             A_membrane[i],
@@ -100,16 +101,18 @@ def insert_scine(fig, L, d, deformability, neher, model):
             "spike.short.dat"
             )
 
-        #spice.run(cir_path, {
-        #        'transient_step': 1e-5,
-        #        'transient_max_T': 0.02
-        #        })
+        spice.run(cir_path, {
+                'transient_step': 1e-5,
+                'transient_max_T': 0.005
+                })
 
 
 import model1
 
 fig = plt.figure()
-insert_scine(fig, 6000e-9, 500e-9, 999999999, 1e-3, model1)
+insert_scine(fig, 2000e-9, 200e-9, 300e-9, 1, 0.2, model1)
+insert_scine(fig, 2000e-9, 200e-9, 300e-9, 1e-6, 0.2, model1)
+insert_scine(fig, 2000e-9, 200e-9, 300e-9, 1e4, 0.2, model1)
 #fig.show()
 #while True:
 #    pass
