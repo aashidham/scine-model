@@ -28,7 +28,7 @@ class LinearProgression(object):
             raise StopIteration()
 
 
-def insert_scine(fig, L, d, deformability, model):
+def insert_scine(fig, L, d, deformability, neher, model):
 
     # The length of the electrode inside of, enveloped by, and outside
     # of the cell over time.
@@ -57,7 +57,7 @@ def insert_scine(fig, L, d, deformability, model):
     # outside of the cell over time.
     cap = math.pi * pow(d / 2.0, 2)
     A_per_L = math.pi * d
-    A_intra = [cap + (A_per_L * l) if l > 0 else 0 for l in L_intra]
+    A_intra = [cap + (A_per_L * l) if (l > 0) and (deformability < 1000) else 0 for l in L_intra]
     A_env = [A_per_L * l if l > 0 else 0 for l in L_env]
     A_extra = [A_per_L * l for l in L_extra]
 
@@ -85,7 +85,7 @@ def insert_scine(fig, L, d, deformability, model):
 
     # The seal resistance over time. TODO We'll insert a free
     # parameter here later. neher
-    R_seal = [(10e9 * l / (d * math.pi)) + 1 for l in L_env]
+    R_seal = [(10e9 * neher * l / (d * math.pi)) + 1 for l in L_env]
 
     for i in range(len(T)):
         cir_path = model.generate(
@@ -109,7 +109,7 @@ def insert_scine(fig, L, d, deformability, model):
 import model1
 
 fig = plt.figure()
-insert_scine(fig, 6000e-9, 500e-9, 999999999, model1)
+insert_scine(fig, 6000e-9, 500e-9, 999999999, 1e-3, model1)
 #fig.show()
 #while True:
 #    pass
