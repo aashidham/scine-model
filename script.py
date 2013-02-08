@@ -84,7 +84,7 @@ def insert_scine(fig, L, d, deformability, model):
 
     # The seal resistance over time. TODO We'll insert a free
     # parameter here later. neher
-    R_seal = [10e9 * l / (d * math.pi) for l in L_env]
+    R_seal = [(10e9 * l / (d * math.pi)) + 1 for l in L_env]
 
     for i in range(len(T)):
         cir_path = model.generate(

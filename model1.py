@@ -75,7 +75,7 @@ def generate(filename, alpha, k, R_seal, A_intra, A_env, A_membrane, A_extra, da
         'Xintracpe': intra_cpe,
         'Xsheathedcpe_i': lambda _: sheathed_cpe,
         'Rmembrane_i': lambda _: N_compartments / (S_tm * A_membrane) if A_membrane > 0 else 1e20,
-        'Cmembrane_i': lambda _: (A_membrane * 0.01) / N_compartments,
+        'Cmembrane_i': lambda _: (A_membrane * 0.01) / N_compartments if A_membrane > 0 else 1e-20,
         'Rseal_i': lambda _: R_seal / N_compartments
         }
     for i, n in enumerate(netlist):
