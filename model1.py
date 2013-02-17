@@ -5,7 +5,7 @@ import tempfile
 import ladder
 
 
-def generate(filename, alpha, k, R_seal, R_pene, A_intra, A_env, A_membrane, A_extra, data_path):
+def generate(neuron_path, filename, params):
 
     # Run gnetlist to create a netlist from the model1 schematic.
     def run_netlister(fn):
@@ -39,9 +39,8 @@ def generate(filename, alpha, k, R_seal, R_pene, A_intra, A_env, A_membrane, A_e
         c[2] = str(o)
         netlist.append(' '.join(c))
     Rseali_out = 'solution_bus'
-    N_compartments = 2
-    for i in range(N_compartments):
-        if i == N_compartments - 1:
+    for i in range(params['N_compartments']):
+        if i == params['N_compartments'] - 1:
             compartment = 'Rpene_bus'
         else:
             compartment = 'compartment_%s' %i 
@@ -50,34 +49,33 @@ def generate(filename, alpha, k, R_seal, R_pene, A_intra, A_env, A_membrane, A_e
         place(Xsheathedcpei, i, Rseali_out, 'electrode_bus')
         place(Rmembranei, i, Rseali_out, 'cell_bus')
         place(Cmembranei, i, Rseali_out, 'cell_bus')
-    
-    # Make the CPEs. TODO make alpha and d_p free params.
-    path, extra_cpe = ladder.generate(50, alpha, k / (A_extra + 1e-30), 'generated')
+
+    # Make the CPEs.
+    path, extra_cpe = ladder.generate(50, params['alpha'], params['k'] / (params['A_extra'] + 1e-30), 'generated')
     netlist.insert(1, '.include %s' % path)
-    path, intra_cpe = ladder.generate(50, alpha, k / (A_intra + 1e-30), 'generated')
+    path, intra_cpe = ladder.generate(50, params['alpha'], params['k'] / (params['A_intra'] + 1e-30), 'generated')
     netlist.insert(1, '.include %s' % path)
-    path, sheathed_cpe = ladder.generate(50, alpha, k / (A_env + 1e-30), 'generated')
+    path, sheathed_cpe = ladder.generate(50, params['alpha'], params['k'] / (params['A_env'] + 1e-30), 'generated')
     netlist.insert(1, '.include %s' % path)
 
-    netlist.insert(0, '* alpha=%s k=%s R_seal=%s A_intra=%s A_env=%s A_membrane=%s A_extra=%s' % (alpha, k, R_seal, A_intra, A_env, A_membrane, A_extra))
+    netlist.insert(0, '* alpha=%s k=%s R_seal=%s A_intra=%s A_env=%s A_membrane=%s A_extra=%s' % (
+            params['alpha'], params['k'], params['R_seal'], params['A_intra'], params['A_env'], params['A_membrane'], params['A_extra']))
 
     # Find variables.
     S_tm = 0.1
     values = {
-        # TODO make these into free params.
         'Rpara': 1e12,
         'Cpara': 4e-12,
-        'Rpene': R_pene,
+        'Rpene': params['R_pene'],
         'Rwholecell': 1e8,
         'Cwholecell': 2e-10,
-        'Rsoln': 200,
-        
+        'Rsoln': 200,        
         'Xextracpe': extra_cpe,
         'Xintracpe': intra_cpe,
         'Xsheathedcpe_i': lambda _: sheathed_cpe,
-        'Rmembrane_i': lambda _: N_compartments / (S_tm * A_membrane) if A_membrane > 0 else 1e20,
-        'Cmembrane_i': lambda _: (A_membrane * 0.01) / N_compartments if A_membrane > 0 else 1e-20,
-        'Rseal_i': lambda _: R_seal / N_compartments
+        'Rmembrane_i': lambda _: params['N_compartments'] / (S_tm * params['A_membrane']) if params['A_membrane'] > 0 else 1e20,
+        'Cmembrane_i': lambda _: (params['A_membrane'] * 0.01) / params['N_compartments'] if params['A_membrane'] > 0 else 1e-20,
+        'Rseal_i': lambda _: params['R_seal'] / params['N_compartments']
         }
     for i, n in enumerate(netlist):
         missing = '<No valid value attribute found>'
@@ -95,7 +93,7 @@ def generate(filename, alpha, k, R_seal, R_pene, A_intra, A_env, A_membrane, A_e
     Acell = get_component('Acell', strip=True)
     assert len(Acell) == 4
     netlist.append('%s %%vd([%s, %s]) %s' % tuple(Acell))
-    netlist.append('\n.model cell_potential filesource (file="%s", amploffset=[0], amplscale=[1])' % data_path)
+    netlist.append('\n.model cell_potential filesource (file="%s", amploffset=[0], amplscale=[1])' % neuron_path)
 
     f = open(filename, 'w')
     f.write('\n'.join(netlist))

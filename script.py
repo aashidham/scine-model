@@ -28,7 +28,7 @@ class LinearProgression(object):
             raise StopIteration()
 
 
-def insert_scine(fig, L, t_step, d, deformability, neher, model):
+def insert_scine(fig, L, t_step, d, deformability, neher, R_pene, R_seal_total, N_compartments, model):
 
     # The length of the electrode inside of, enveloped by, and outside
     # of the cell over time.
@@ -83,36 +83,47 @@ def insert_scine(fig, L, t_step, d, deformability, neher, model):
     p.plot(T, A_extra, 'r', T, A_intra, 'g', T, A_env, 'b', T, A_membrane, 'y')
     p.legend(['A_extra', 'A_intra', 'A_env', 'A_membrane'])
 
-    # The seal resistance over time. TODO We'll insert a free
-    # parameter here later. neher
-    R_seal = [(10e9 * neher * l / (d * math.pi)) + 1 for l in L_env]
+    # The seal resistance over time.
+    R_seal = [R_seal_total * neher * l / (d * math.pi) for l in L_env]
 
     for i in range(len(T)):
         cir_path = model.generate(
-            'generated/model1_L@%s_d@%s_deformability@%s_neher@%s_t@%s.cir' % (L, d, deformability, neher, T[i]),
-            # TODO alpha, k should be free params
-            0.5, 0.14,
-            R_seal[i],
-            1e20 if i > 0 else 1e9,
-            A_intra[i],
-            A_env[i],
-            A_membrane[i],
-            A_extra[i],
-            "spike.short.dat"
+            'spike.short.dat',
+            'generated/model1_L@%s_d@%s_deformability@%s_neher@%s_Rpene@%s_Rseal@%s_compartments@%s_t@%s.cir' % (L, d, deformability, neher, R_pene, R_seal_total, N_compartments, T[i]),
+            {
+                'N_compartments': N_compartments,
+                'alpha': 0.5,
+                'k': 0.14,
+                'R_seal': R_seal[i],
+                'A_intra': A_intra[i],
+                'A_env': A_env[i],
+                'A_membrane': A_membrane[i],
+                'A_extra': A_extra[i],
+                'R_pene': R_pene
+                }
             )
-
-        spice.run(cir_path, {
-                'transient_step': 1e-5,
-                'transient_max_T': 0.005
+        spice.run_ac(cir_path, {
+                'exponent_low': -5,
+                'exponent_high': 5
                 })
+        #spice.run_transient(cir_path, {
+        #        'transient_step': 1e-5,
+        #        'transient_max_T': 0.005
+        #        })
 
 
-import model1
-
+#import model1
 fig = plt.figure()
-insert_scine(fig, 2000e-9, 200e-9, 300e-9, 1, 0.2, model1)
-insert_scine(fig, 2000e-9, 200e-9, 300e-9, 1e-6, 0.2, model1)
-insert_scine(fig, 2000e-9, 200e-9, 300e-9, 1e4, 0.2, model1)
+#for R_pene in LinearProgression(1e3, 1e13, 10):
+#    for deformability in [10000, 1000, 100, 10, 1]:
+#        for R_seal_total in LinearProgression(1e7, 1e12, 10):
+#            print 'r_seal = %s' % R_seal_total
+#            fig = plt.figure()
+#insert_scine(fig, 2000e-9, 200e-9, 300e-9, deformability, 0.2, R_pene, R_seal_total, model1)
+
+insert_scine(fig, 2000e-9, 200e-9, 300e-9, 100, 0.2, 1e10, 1e9, 2, model1)
+#insert_scine(fig, 2000e-9, 200e-9, 300e-9, 100, 0.2, 1e10, 1e9, 10, model1)
+
 #fig.show()
 #while True:
 #    pass
