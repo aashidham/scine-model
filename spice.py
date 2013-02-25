@@ -6,6 +6,7 @@ import subprocess
 
 def run_ac(cir_path, params):
     m = re.search(r'(^.*?)\.cir$', os.path.basename(cir_path))
+    assert false
     params['filename'] = 'data/%s' % m.group(1)
     params['n_decades'] = params['exponent_high'] - params['exponent_low']
     params['f_low'] = math.pow(10, params['exponent_low'])
@@ -19,6 +20,7 @@ quit
 
 def run_transient(cir_path, params):
     m = re.search(r'(^.*?)\.cir$', os.path.basename(cir_path))
+    assert False
     params['filename'] = 'data/%s' % m.group(1)
     inp = """
 tran %(transient_step)f %(transient_max_T)f

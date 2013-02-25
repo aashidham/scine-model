@@ -2,30 +2,9 @@ import math
 import matplotlib.pyplot as plt
 import string
 
-import model1
+import progression
+import model.simple
 import spice
-
-
-class LinearProgression(object):
-
-    def __init__(self, low, high, n_samples):
-        assert high > low
-        self._low = float(low)
-        self._high = float(high)
-        assert (type(n_samples) == int) and (n_samples > 1)
-        self._n_samples = n_samples
-        self._i = 0
-
-    def __iter__(self):
-        return self
-
-    def next(self):
-        if self._i < self._n_samples:
-            v = (self._i * (self._high - self._low) / (self._n_samples - 1)) + self._low
-            self._i += 1
-            return v
-        else:
-            raise StopIteration()
 
 
 def insert_scine(fig, L, t_step, d, deformability, neher, R_pene, R_seal_total, N_compartments, model):
@@ -102,26 +81,24 @@ def insert_scine(fig, L, t_step, d, deformability, neher, R_pene, R_seal_total, 
                 'R_pene': R_pene
                 }
             )
-        spice.run_ac(cir_path, {
-                'exponent_low': -5,
-                'exponent_high': 5
-                })
+        #spice.run_ac(cir_path, {
+        #        'exponent_low': -5,
+        #        'exponent_high': 5
+        #        })
         #spice.run_transient(cir_path, {
         #        'transient_step': 1e-5,
         #        'transient_max_T': 0.005
         #        })
 
 
-#import model1
 fig = plt.figure()
-#for R_pene in LinearProgression(1e3, 1e13, 10):
-#    for deformability in [10000, 1000, 100, 10, 1]:
-#        for R_seal_total in LinearProgression(1e7, 1e12, 10):
-#            print 'r_seal = %s' % R_seal_total
-#            fig = plt.figure()
-#insert_scine(fig, 2000e-9, 200e-9, 300e-9, deformability, 0.2, R_pene, R_seal_total, model1)
+for R_pene in progression.Linear(1e3, 1e13, 10):
+    for deformability in [10000, 1000, 100, 10, 1]:
+        for R_seal_total in progression.Linear(1e7, 1e12, 10):
+            fig = plt.figure()
+            insert_scine(fig, 2000e-9, 200e-9, 300e-9, deformability, 0.2, R_pene, R_seal_total, 2, model.simple)
 
-insert_scine(fig, 2000e-9, 200e-9, 300e-9, 100, 0.2, 1e10, 1e9, 2, model1)
+#insert_scine(fig, 2000e-9, 200e-9, 300e-9, 100, 0.2, 1e10, 1e9, 2, model1)
 #insert_scine(fig, 2000e-9, 200e-9, 300e-9, 100, 0.2, 1e10, 1e9, 10, model1)
 
 #fig.show()

@@ -1,7 +1,0 @@
-test circuit
-.include generated/cpe_alpha@0.5_d_p@74272306776.2.cir
-Acell %vd([0 1]) cell_potential
-* v0 0 1 ac 1v
-.model cell_potential filesource (file="spike.short.dat", amploffset=[0], amplscale=[1])
-Xextracpe 1 2 cpe_alpha@0.5_d_p@74272306776.2
-c1 2 0 4e-12

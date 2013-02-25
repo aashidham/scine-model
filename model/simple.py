@@ -1,3 +1,4 @@
+import os
 import re
 import subprocess
 import tempfile
@@ -7,18 +8,20 @@ import ladder
 
 def generate(neuron_path, filename, params):
 
-    # Run gnetlist to create a netlist from the model1 schematic.
+    # Run gnetlist to create a netlist from the schematic.
     def run_netlister(fn):
-        _, netlist_fn = tempfile.mkstemp()
-        p = subprocess.Popen(['gnetlist', '-n', '-g', 'spice', fn, '-o', netlist_fn], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        _, err = p.communicate()
+        f, netlist_fn = tempfile.mkstemp()
+        os.close(f)
+        p = subprocess.Popen(['gnetlist', '-n', '-g', 'spice', fn, '-o', netlist_fn], stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True)
+        s, err = p.communicate()
+        p.wait()
         assert err == '', err
         return netlist_fn
-    model1_fn = run_netlister('schematics/model1.sch')
+    model_fn = run_netlister('model/simple.sch')
 
     # Find and repeat the compartment motif.
 
-    netlist = filter(lambda l: l != '.END', open(model1_fn).read().split('\n'))
+    netlist = filter(lambda l: l != '.END', open(model_fn).read().split('\n'))
     def get_component(name, strip=False):
         for n in netlist:
             ns = n.split()
