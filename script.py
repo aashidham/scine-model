@@ -1,13 +1,13 @@
 import math
-import matplotlib.pyplot as plt
 import string
 
+import chosen_strategy
 import progression
 import model.simple
 import spice
 
 
-def insert_scine(fig, L, t_step, d, deformability, neher, R_pene, R_seal_total, N_compartments, model):
+def insert_scine(L, t_step, d, deformability, neher, R_pene, R_seal_total, N_compartments, model):
 
     # The length of the electrode inside of, enveloped by, and outside
     # of the cell over time.
@@ -40,13 +40,13 @@ def insert_scine(fig, L, t_step, d, deformability, neher, R_pene, R_seal_total, 
     A_env = [A_per_L * l if l > 0 else 0 for l in L_env]
     A_extra = [A_per_L * l for l in L_extra]
 
-    p = fig.add_subplot(2, 2, 1)
-    p.set_title('Electrode length')
-    p.ticklabel_format(style='sci', axis='x', scilimits=(0,0))
-    p.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
-    p.set_ylabel('m')
-    p.plot(T, L_extra, 'r', T, L_intra, 'g', T, L_env, 'b')
-    p.legend(['L_extra', 'L_intra', 'L_env'])
+    #p = fig.add_subplot(2, 2, 1)
+    #p.set_title('Electrode length')
+    #p.ticklabel_format(style='sci', axis='x', scilimits=(0,0))
+    #p.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
+    #p.set_ylabel('m')
+    #p.plot(T, L_extra, 'r', T, L_intra, 'g', T, L_env, 'b')
+    #p.legend(['L_extra', 'L_intra', 'L_env'])
 
     # The surface area of the membrane enveloping the electrode over
     # time, where the enveloping membrane is a cylinder with diameter
@@ -54,13 +54,13 @@ def insert_scine(fig, L, t_step, d, deformability, neher, R_pene, R_seal_total, 
     # length.
     A_membrane = [math.pi * (d + 100e-9) * l for l in L_env]
 
-    p = fig.add_subplot(2, 2, 2)
-    p.set_title('Electrode surface area')
-    p.ticklabel_format(style='sci', axis='x', scilimits=(0,0))
-    p.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
-    p.set_ylabel('m^2')
-    p.plot(T, A_extra, 'r', T, A_intra, 'g', T, A_env, 'b', T, A_membrane, 'y')
-    p.legend(['A_extra', 'A_intra', 'A_env', 'A_membrane'])
+    #p = fig.add_subplot(2, 2, 2)
+    #p.set_title('Electrode surface area')
+    #p.ticklabel_format(style='sci', axis='x', scilimits=(0,0))
+    #p.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
+    #p.set_ylabel('m^2')
+    #p.plot(T, A_extra, 'r', T, A_intra, 'g', T, A_env, 'b', T, A_membrane, 'y')
+    #p.legend(['A_extra', 'A_intra', 'A_env', 'A_membrane'])
 
     # The seal resistance over time.
     R_seal = [R_seal_total * neher * l / (d * math.pi) for l in L_env]
@@ -85,21 +85,18 @@ def insert_scine(fig, L, t_step, d, deformability, neher, R_pene, R_seal_total, 
         #        'exponent_low': -5,
         #        'exponent_high': 5
         #        })
-        #spice.run_transient(cir_path, {
-        #        'transient_step': 1e-5,
-        #        'transient_max_T': 0.005
-        #        })
+        chosen_strategy(spice.TransientSpice(cir_path, {
+                'transient_step': 1e-5,
+                'transient_max_T': 0.005
+                }))
 
 
-fig = plt.figure()
-for R_pene in progression.Linear(1e3, 1e13, 10):
-    for deformability in [10000, 1000, 100, 10, 1]:
-        for R_seal_total in progression.Linear(1e7, 1e12, 10):
-            fig = plt.figure()
-            insert_scine(fig, 2000e-9, 200e-9, 300e-9, deformability, 0.2, R_pene, R_seal_total, 2, model.simple)
-
-#insert_scine(fig, 2000e-9, 200e-9, 300e-9, 100, 0.2, 1e10, 1e9, 2, model1)
-#insert_scine(fig, 2000e-9, 200e-9, 300e-9, 100, 0.2, 1e10, 1e9, 10, model1)
+#fig = plt.figure()
+#for R_pene in progression.Linear(1e3, 1e13, 10):
+#    for deformability in [10000, 1000, 100, 10, 1]:
+#        for R_seal_total in progression.Linear(1e7, 1e12, 10):
+#insert_scine(2000e-9, 200e-9, 300e-9, deformability, 0.2, R_pene, R_seal_total, 2, model.simple)
+insert_scine(2000e-9, 200e-9, 300e-9, 5, 0.2, 1e10, 1e12, 2, model.simple)
 
 #fig.show()
 #while True:
