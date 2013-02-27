@@ -4,15 +4,15 @@ import random
 import subprocess
 import tempfile
 
-import strategy
+import platform
 
 
-class BasicEC2Strategy(strategy.Strategy):
+class BasicEC2Platform(platform.Platform):
 
     name = 'Runs tasks over a given number of instances.'
 
     def __init__(self):
-        super(BasicEC2Strategy, self).__init__()
+        super(BasicEC2Platform, self).__init__()
 
     def args(self, parser):
         parser.add_argument('ami', type=str, help='Which amazon machine image')
@@ -59,4 +59,4 @@ class BasicEC2Strategy(strategy.Strategy):
 
 
 if __name__ == '__main__':
-    strategy.go(BasicEC2Strategy)
+    platform.go(BasicEC2Platform)

@@ -1,15 +1,15 @@
 import os
 import tempfile
 
-import strategy
+import platform
 
 
-class LocalStrategy(strategy.Strategy):
+class LocalPlatform(platform.Platform):
 
     name = 'Runs one task after the other, on this machine.'
 
     def __init__(self):
-        super(LocalStrategy, self).__init__()
+        super(LocalPlatform, self).__init__()
 
     def execute(self):
         for t in self._tasks:
@@ -22,4 +22,4 @@ class LocalStrategy(strategy.Strategy):
 
 
 if __name__ == '__main__':
-    strategy.go(LocalStrategy)
+    platform.go(LocalPlatform)

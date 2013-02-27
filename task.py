@@ -4,7 +4,7 @@ import os.path
 import subprocess
 import sys
 
-import strategy.local
+import platform.local
 
 
 DEVNULL = open(os.devnull, 'wb')
@@ -57,7 +57,7 @@ if __name__ == '__main__':
     args = parser.parse_args(sys.argv[1:])
 
     # Run the task!
-    s = strategy.local.LocalStrategy()
+    s = platform.local.LocalPlatform()
     s(cls(dict([(key, getattr(args, 'in_%s' % key)) for key in cls.in_files]), *args.params))
     s.execute()
 
