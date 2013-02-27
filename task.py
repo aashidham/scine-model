@@ -4,30 +4,36 @@ import os.path
 import subprocess
 import sys
 
+import strategy.local
+
 
 DEVNULL = open(os.devnull, 'wb')
 
 
 class Task(object):
 
+    platform = None
     sys_packages = []
     in_files = {}
-    out_files = []
 
-    def __init__(self, *args):
+    def __init__(self, in_files, *args):
+        assert set(in_files.keys()) == set(self.in_files)
+        self.in_files = in_files
         self._args = args
 
     def go(self):
         self._setup()
-        self._run(*self._args)
+        assert self.platform is not None
+        out_fns = self._run(self.platform, *self._args)
         self._teardown()
+        return out_fns
 
     def _setup(self):
         for p in self.sys_packages + ['python'] + (['python-virtualenv'] if self.pip_packages else []):
             if subprocess.call(['/usr/bin/dpkg-query', '-l', p], stdout=DEVNULL) != 0:
                 subprocess.check_call(['/usr/bin/apt-get', '-y', 'install', p])
 
-    def _run(self):
+    def _run(self, platform):
         raise NotImplementedError()
 
     def _teardown(self):
@@ -43,22 +49,17 @@ if __name__ == '__main__':
     parser.add_argument('params', nargs='*', default=[])
     args = parser.parse_args(sys.argv[1:3])
 
-    # Get the class and parse the rest of the arguments for in- and out- files.
+    # Get the class and parse the rest of the arguments for input files.
     module = __import__(args.module, globals(), locals(), [], -1)
     cls = getattr(module, args.cls)
     for key in cls.in_files:
         parser.add_argument('--in-%s' % key, type=str, required=True)
-    for key in cls.out_files:
-        parser.add_argument('--out-%s' % key, type=str, required=True)
     args = parser.parse_args(sys.argv[1:])
 
     # Run the task!
-    t = cls(
-        dict([(key, getattr(args, 'in_%s' % key)) for key in cls.in_files]),
-        dict([(key, getattr(args, 'out_%s' % key)) for key in cls.out_files]),
-        *args.params
-        )
-    t.go()
+    s = strategy.local.LocalStrategy()
+    s(cls(dict([(key, getattr(args, 'in_%s' % key)) for key in cls.in_files]), *args.params))
+    s.execute()
 
 
 class PythonTask(Task):

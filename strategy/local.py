@@ -1,3 +1,6 @@
+import os
+import tempfile
+
 import strategy
 
 
@@ -10,7 +13,12 @@ class LocalStrategy(strategy.Strategy):
 
     def execute(self):
         for t in self._tasks:
-            t.go()
+            print 'outputs: %s' % ''.join(t.go())
+
+    def file(self, suffix):
+        fd, fn = tempfile.mkstemp(suffix)
+        os.close(fd)
+        return fn
 
 
 if __name__ == '__main__':

@@ -13,9 +13,13 @@ class Strategy(object):
         pass
 
     def __call__(self, task):
+        task.platform = self
         self._tasks.append(task)
 
     def execute(self):
+        raise NotImplementedError()
+
+    def file(self):
         raise NotImplementedError()
 
 

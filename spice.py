@@ -30,9 +30,9 @@ class SpiceTask(task.PythonTask):
 class TransientSpice(SpiceTask):
 
     in_files = ['circuit']
-    out_files = ['data']
 
-    def _run(self, in_files, out_files, transient_step, transient_max_T):
+    def _run(self, platform, transient_step, transient_max_T):
+        data = platform.file('.data')
         inp = """
 tran %(transient_step)f %(transient_max_T)f
 wrdata %(data_out)s electrode_bus solution_bus cell_bus
@@ -40,7 +40,8 @@ quit
 """ % {
             'transient_step': float(transient_step),
             'transient_max_T': float(transient_max_T),
-            'data_out': out_files['data']
+            'data_out': '.'.join(data.split('.')[:-1])
             }
-        subprocess.Popen(['ngspice', '-p', in_files['circuit']], stdin=subprocess.PIPE, stdout=subprocess.PIPE, close_fds=True).communicate(inp)
+        subprocess.Popen(['ngspice', '-p', self.in_files['circuit']], stdin=subprocess.PIPE, stdout=subprocess.PIPE, close_fds=True).communicate(inp)
+        return [data]
 
