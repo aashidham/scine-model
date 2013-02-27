@@ -3,6 +3,8 @@ import os.path
 import re
 import subprocess
 
+import task
+
 
 def run_ac(cir_path, params):
     m = re.search(r'(^.*?)\.cir$', os.path.basename(cir_path))
@@ -19,24 +21,7 @@ quit
     subprocess.Popen(['ngspice', '-p', cir_path], stdin=subprocess.PIPE, stdout=subprocess.PIPE).communicate(inp)
 
 
-class PythonTask(object):
-
-    def __init__(self):
-        raise NotImplementedError()
-
-    def setup(self):
-        for p in self.sys_packages + ['python'] + (['python-virtualenv'] if self.pip_packages else []):
-            if subprocess.call(['/usr/bin/dpkg-query', '-l', p]) != 0:
-                subprocess.check_call(['/usr/bin/apt-get', '-y', 'install', p])
-        if self.pip_packages:
-            if not os.path.exists('env'):
-                subprocess.check_call(['virtualenv', 'env']) == 0
-                for p in self.pip_packages:
-                    subprocess.check_call(['pip', 'install', p]) == 0
-            # TODO; activate env
-
-
-class SpiceTask(PythonTask):
+class SpiceTask(task.PythonTask):
 
     sys_packages = ['ngspice']
     pip_packages = []
@@ -44,17 +29,18 @@ class SpiceTask(PythonTask):
 
 class TransientSpice(SpiceTask):
 
-    def __init__(self, cir_path, params):
-        self._cir_path = cir_path
-        m = re.search(r'(^.*?)\.cir$', os.path.basename(cir_path))
-        params['filename'] = 'data/%s' % m.group(1)
-        self._params = params
+    in_files = ['circuit']
+    out_files = ['data']
 
-    def run(self):
+    def _run(self, in_files, out_files, transient_step, transient_max_T):
         inp = """
 tran %(transient_step)f %(transient_max_T)f
-wrdata %(filename)s electrode_bus solution_bus cell_bus
+wrdata %(data_out)s electrode_bus solution_bus cell_bus
 quit
-""" % self._params
-        subprocess.Popen(['ngspice', '-p', self._cir_path], stdin=subprocess.PIPE, stdout=subprocess.PIPE, close_fds=True).communicate(inp)
+""" % {
+            'transient_step': float(transient_step),
+            'transient_max_T': float(transient_max_T),
+            'data_out': out_files['data']
+            }
+        subprocess.Popen(['ngspice', '-p', in_files['circuit']], stdin=subprocess.PIPE, stdout=subprocess.PIPE, close_fds=True).communicate(inp)
 

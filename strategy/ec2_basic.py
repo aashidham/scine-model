@@ -59,4 +59,4 @@ class BasicEC2Strategy(strategy.Strategy):
 
 
 if __name__ == '__main__':
-    strategy.run(BasicEC2Strategy)
+    strategy.go(BasicEC2Strategy)

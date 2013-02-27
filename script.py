@@ -85,10 +85,7 @@ def insert_scine(L, t_step, d, deformability, neher, R_pene, R_seal_total, N_com
         #        'exponent_low': -5,
         #        'exponent_high': 5
         #        })
-        chosen_strategy(spice.TransientSpice(cir_path, {
-                'transient_step': 1e-5,
-                'transient_max_T': 0.005
-                }))
+        chosen_strategy(spice.TransientSpice({'circuit': cir_path}, {'data': 'nang'}, 1e-5, 0.005))
 
 
 #fig = plt.figure()

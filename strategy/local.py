@@ -10,9 +10,8 @@ class LocalStrategy(strategy.Strategy):
 
     def execute(self):
         for t in self._tasks:
-            t.setup()
-            t.run()
+            t.go()
 
 
 if __name__ == '__main__':
-    strategy.run(LocalStrategy)
+    strategy.go(LocalStrategy)

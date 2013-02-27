@@ -19,7 +19,7 @@ class Strategy(object):
         raise NotImplementedError()
 
 
-def run(strategy_cls):
+def go(strategy_cls):
 
     class Importer(object):
 
@@ -34,8 +34,7 @@ def run(strategy_cls):
 
     sys.meta_path.insert(0, Importer())
     parser = argparse.ArgumentParser(description=strategy_cls.name)
-    parser.add_argument('module', help="Which module to command")
-    args = None
+    parser.add_argument('module', help='Which module to command')
     args = parser.parse_args(sys.argv[1:2])
     to_command = __import__(args.module, globals(), locals(), [], -1)
     to_command.chosen_strategy.args(parser)
