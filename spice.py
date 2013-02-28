@@ -6,30 +6,15 @@ import subprocess
 import task
 
 
-def run_ac(cir_path, params):
-    m = re.search(r'(^.*?)\.cir$', os.path.basename(cir_path))
-    assert false
-    params['filename'] = 'data/%s' % m.group(1)
-    params['n_decades'] = params['exponent_high'] - params['exponent_low']
-    params['f_low'] = math.pow(10, params['exponent_low'])
-    params['f_high'] = math.pow(10, params['exponent_high'])
-    inp = """
-ac dec %(n_decades)i %(f_low)f %(f_high)f
-wrdata %(filename)s electrode_bus
-quit
-""" % params
-    subprocess.Popen(['ngspice', '-p', cir_path], stdin=subprocess.PIPE, stdout=subprocess.PIPE).communicate(inp)
-
-
 class SpiceTask(task.PythonTask):
 
     sys_packages = ['ngspice']
     pip_packages = []
 
+    in_files = ['circuit']
+
 
 class TransientSpice(SpiceTask):
-
-    in_files = ['circuit']
 
     def _run(self, platform, transient_step, transient_max_T):
         data = platform.file('.data')
@@ -45,3 +30,20 @@ quit
         subprocess.Popen(['ngspice', '-p', self.in_files['circuit']], stdin=subprocess.PIPE, stdout=subprocess.PIPE, close_fds=True).communicate(inp)
         return [data]
 
+
+class ACSpice(SpiceTask):
+
+    def _run(self, platform, exponent_low, exponent_high):
+        exponent_low, exponent_high = map(float, [exponent_low, exponent_high])
+        data = platform.file('.data')
+        inp = """
+ac dec 10 %(f_low)f %(f_high)f
+wrdata %(data_out)s electrode_bus
+quit
+""" % {
+            'f_high': math.pow(10, exponent_high),
+            'f_low': math.pow(10, exponent_low),
+            'data_out': '.'.join(data.split('.')[:-1])
+            }
+        subprocess.Popen(['ngspice', '-p', self.in_files['circuit']], stdin=subprocess.PIPE, stdout=subprocess.PIPE, close_fds=True).communicate(inp)
+        return [data]

@@ -3,7 +3,7 @@ import re
 import subprocess
 import tempfile
 
-import ladder
+import model.ladder_cpe
 
 
 def generate(neuron_path, filename, params):
@@ -54,13 +54,11 @@ def generate(neuron_path, filename, params):
         place(Cmembranei, i, Rseali_out, 'cell_bus')
 
     # Make the CPEs.
-    path, extra_cpe = ladder.generate(50, params['alpha'], params['k'] / (params['A_extra'] + 1e-30), 'generated')
-    netlist.insert(1, '.include %s' % path)
-    path, intra_cpe = ladder.generate(50, params['alpha'], params['k'] / (params['A_intra'] + 1e-30), 'generated')
-    netlist.insert(1, '.include %s' % path)
-    path, sheathed_cpe = ladder.generate(50, params['alpha'], params['k'] / (params['A_env'] + 1e-30), 'generated')
-    netlist.insert(1, '.include %s' % path)
+    netlist.extend([''] + model.ladder_cpe.generate('extra_cpe', 50, params['alpha'], params['k'] / (params['A_extra'] + 1e-30)))
+    netlist.extend([''] + model.ladder_cpe.generate('intra_cpe', 50, params['alpha'], params['k'] / (params['A_intra'] + 1e-30)))
+    netlist.extend([''] + model.ladder_cpe.generate('sheathed_cpe', 50, params['alpha'], params['k'] / (params['A_env'] + 1e-30)))
 
+    # Comment.
     netlist.insert(0, '* alpha=%s k=%s R_seal=%s A_intra=%s A_env=%s A_membrane=%s A_extra=%s' % (
             params['alpha'], params['k'], params['R_seal'], params['A_intra'], params['A_env'], params['A_membrane'], params['A_extra']))
 
@@ -73,9 +71,9 @@ def generate(neuron_path, filename, params):
         'Rwholecell': 1e8,
         'Cwholecell': 2e-10,
         'Rsoln': 200,        
-        'Xextracpe': extra_cpe,
-        'Xintracpe': intra_cpe,
-        'Xsheathedcpe_i': lambda _: sheathed_cpe,
+        'Xextracpe': 'extra_cpe',
+        'Xintracpe': 'intra_cpe',
+        'Xsheathedcpe_i': lambda _: 'sheathed_cpe',
         'Rmembrane_i': lambda _: params['N_compartments'] / (S_tm * params['A_membrane']) if params['A_membrane'] > 0 else 1e20,
         'Cmembrane_i': lambda _: (params['A_membrane'] * 0.01) / params['N_compartments'] if params['A_membrane'] > 0 else 1e-20,
         'Rseal_i': lambda _: params['R_seal'] / params['N_compartments']

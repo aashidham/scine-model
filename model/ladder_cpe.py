@@ -4,7 +4,7 @@ import os.path
 import re
 
 
-def generate(n, alpha, d_p, path):
+def generate(name, n, alpha, d_p):
 
     f_low = 1e-6
     f_high = 1e12
@@ -31,28 +31,22 @@ def generate(n, alpha, d_p, path):
     r_k = map(lambda r: r * fixup, r_k)
     c_k = map(lambda c: c / fixup, c_k)
 
-    # Output circuit.
+    # Return circuit.
 
-    path = os.path.join(path, 'cpe_alpha@%s_d_p@%s.cir' % (alpha, d_p))
-    f = open(path, 'w')
-    m = re.search('(\/?)([^\/]+).cir$', path)
-    assert m
-    name = m.group(2)
-    print >> f, '.subckt ' + name + ' in out'
-    print >> f, '* alpha=%s n=%s f_low=%s f_high=%s' % (alpha, n, f_low, f_high)
+    cpe = ['.subckt %s in out' % name]
+    cpe.append('* alpha=%s n=%s f_low=%s f_high=%s' % (alpha, n, f_low, f_high))
 
     i = 0
     for r, c in zip(r_k, c_k):
-        print >> f, 'r%s in rung_%i %s' % (i, i, r)
-        print >> f, 'c%s rung_%i out %s' % (i, i, c)
+        cpe.append('r%s in rung_%i %s' % (i, i, r))
+        cpe.append('c%s rung_%i out %s' % (i, i, c))
         i += 1
 
-    print >> f, 'rP in out %s' % r_p
-    print >> f, 'cP in out %s' % c_p
+    cpe.append('rP in out %s' % r_p)
+    cpe.append('cP in out %s' % c_p)
+    cpe.append('.ends')
 
-    print >> f, '.ends'
-
-    return path, name
+    return cpe
 
 
 if __name__ == '__main__':

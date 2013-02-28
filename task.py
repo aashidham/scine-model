@@ -22,8 +22,8 @@ class Task(object):
         self._args = args
 
     def go(self):
-        self._setup()
         assert self.platform is not None
+        self._setup()
         out_fns = self._run(self.platform, *self._args)
         self._teardown()
         return out_fns
@@ -31,13 +31,17 @@ class Task(object):
     def _setup(self):
         for p in self.sys_packages + ['python'] + (['python-virtualenv'] if self.pip_packages else []):
             if subprocess.call(['/usr/bin/dpkg-query', '-l', p], stdout=DEVNULL) != 0:
-                subprocess.check_call(['/usr/bin/apt-get', '-y', 'install', p])
+                subprocess.check_call('/usr/bin/sudo /usr/bin/apt-get -qy install'.split() + [p])
 
     def _run(self, platform):
         raise NotImplementedError()
 
     def _teardown(self):
         pass
+
+    def to_command_line(self):
+        in_files = ' '.join(map(lambda kv: '--in-%s=%s' % kv, self.in_files.items()))
+        return 'python -m task %s %s %s %s' % (self.__module__, self.__class__.__name__, ' '.join(map(str, self._args)), in_files)
 
 
 if __name__ == '__main__':
@@ -57,8 +61,9 @@ if __name__ == '__main__':
     args = parser.parse_args(sys.argv[1:])
 
     # Run the task!
+    t = cls(dict([(key, getattr(args, 'in_%s' % key)) for key in cls.in_files]), *args.params)
     s = platform.local.LocalPlatform()
-    s(cls(dict([(key, getattr(args, 'in_%s' % key)) for key in cls.in_files]), *args.params))
+    s(t)
     s.execute()
 
 
