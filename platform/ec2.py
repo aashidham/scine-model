@@ -1,5 +1,6 @@
 import boto.ec2
 import collections
+import itertools
 import json
 import math
 import os
@@ -16,7 +17,12 @@ import platform
 def ssh_just_run(client, cmd):
     ch = client.get_transport().open_session()
     ch.exec_command(cmd)
-    ch.recv_exit_status()
+    while True:
+        s = ch.recv(1024)
+        if s == '':
+            break
+        print 'ssh_just_run: %s' % s
+    print 'ssh_just_run: exit=%s' % ch.recv_exit_status()
 
 
 class BasicEC2Platform(platform.Platform):
@@ -88,11 +94,12 @@ class BasicEC2Platform(platform.Platform):
                     ssh = paramiko.SSHClient()
                     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
                     try:
-                        # SCP over sources and extract.
+                        # SFTP over sources and extract.
                         ssh.connect(i.public_dns_name, username='ubuntu', key_filename='simpledist.pem')
-                        scp = ssh.open_sftp()
-                        scp.put(source_tarball_fn, '/home/ubuntu/source.tar.gz')
-                        print "sources tarball scp'd to %s" % i.public_dns_name
+                        sftp = ssh.open_sftp()
+                        sftp.put(source_tarball_fn, '/home/ubuntu/source.tar.gz')
+                        sftp.close()
+                        print "sources tarball sftp'd to %s" % i.public_dns_name
                         ssh_just_run(ssh, 'cd /home/ubuntu; mkdir source; tar xzf source.tar.gz -C source')
                         print 'sources extracted'
 
@@ -101,22 +108,13 @@ class BasicEC2Platform(platform.Platform):
                         cores = int(stdout.read())
 
                         # Add multiverse and update.
-                        ssh_just_run(ssh, 'echo "deb http://us.archive.ubuntu.com/ubuntu/ precise multiverse" | sudo tee -a /etc/apt/sources.list > /dev/null')
-                        ssh_just_run(ssh, 'echo "deb http://us.archive.ubuntu.com/ubuntu/ precise-updates multiverse" | sudo tee -a /etc/apt/sources.list > /dev/null')
-                        ssh_just_run(ssh, 'sudo apt-get -yq update')
-
-                        # SCP over inputs for all queued tasks and fixup tasks.
-                        queue = queues[len(instance_bookkeep)]
-                        for task in queue:
-                            for in_name, in_fn in task.in_files.items():
-                                _, stdout, _ = ssh.exec_command('mktemp')
-                                new_in = stdout.read().strip()
-                                print '%s -> %s' % (in_fn, new_in)
-                                scp.put(in_fn, new_in)
-                                task.in_files[in_name] = new_in
+                        ssh_just_run(ssh, """echo "deb http://us.archive.ubuntu.com/ubuntu/ precise multiverse
+deb http://us.archive.ubuntu.com/ubuntu/ precise-updates multiverse
+" | sudo tee /etc/apt/sources.list.d/multiverse.list""")
+                        ssh_just_run(ssh, 'sudo apt-get -y update')
 
                         instance_bookkeep[i.public_dns_name] = {
-                            'queue': queue,
+                            'queue': queues[len(instance_bookkeep)],
                             'client': ssh,
                             'cores': cores,
                             'channels': []
@@ -129,9 +127,20 @@ class BasicEC2Platform(platform.Platform):
                 break
 
         # Keep workers busy -- pop off a task for each free core.
+        last_report = None 
         while True:
-            time.sleep(1)
-            print '** reap **'
+            tasks_unscheduled = len(list(itertools.chain(*map(lambda b: b['queue'], instance_bookkeep.values()))))
+            tasks_waiting = len(list(itertools.chain(*map(lambda b: b['channels'], instance_bookkeep.values()))))
+            report = 'tasks unscheduled=%i, waiting=%i' % (tasks_unscheduled, tasks_waiting)
+            if report != last_report:
+                print report
+                last_report = report
+
+            if tasks_unscheduled == 0 and tasks_waiting == 0:
+                print 'done!'
+                break
+
+            time.sleep(0.2)
 
             for instance_url, bookkeep in instance_bookkeep.items():
 
@@ -139,19 +148,30 @@ class BasicEC2Platform(platform.Platform):
                 new_channels = []
                 for (ch, stdout) in bookkeep['channels']:
                     while ch.recv_ready():
-                        stdout += ch.recv(1024)
+                        stdout += ch.recv(1)
                     if ch.exit_status_ready():
-                        print 'task finished (%i)' % len(stdout)
+                        print stdout
                         ch.close()
                     else:
                         new_channels.append((ch, stdout))
                 bookkeep['channels'] = new_channels
 
                 # Any free cores? Start tasks.
-                if len(bookkeep['channels']) < bookkeep['cores']:
-                    _, stdout, _ = bookkeep['client'].exec_command('mktemp')
-                    journal = stdout.read().strip()
-                    cmd = 'cd source ; %s' % bookkeep['queue'].pop().to_command_line()
+                if len(bookkeep['channels']) < bookkeep['cores'] and bookkeep['queue']:
+
+                    task = bookkeep['queue'].pop()
+
+                    # SFTP over inputs for task and fixup task.
+                    sftp = bookkeep['client'].open_sftp()
+                    for in_name, in_fn in task.in_files.items():
+                        _, stdout, _ = bookkeep['client'].exec_command('mktemp')
+                        new_in = stdout.read().strip()
+                        sftp.put(in_fn, new_in)
+                        task.in_files[in_name] = new_in
+                    sftp.close()
+
+                    # Start task.
+                    cmd = 'cd source ; %s' % task.to_command_line()
                     print '[%i/%i] on %s, "%s"' % (len(bookkeep['channels']) + 1, bookkeep['cores'], instance_url, cmd)
                     ch = bookkeep['client'].get_transport().open_session()
                     ch.exec_command(cmd)

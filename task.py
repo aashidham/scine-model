@@ -31,7 +31,7 @@ class Task(object):
     def _setup(self):
         for p in self.sys_packages + ['python'] + (['python-virtualenv'] if self.pip_packages else []):
             if subprocess.call(['/usr/bin/dpkg-query', '-l', p], stdout=DEVNULL) != 0:
-                subprocess.check_call('/usr/bin/sudo /usr/bin/apt-get -qy install'.split() + [p])
+                subprocess.check_call('sudo apt-get -y --force-yes -qq install %s' % p, shell=True)
 
     def _run(self, platform):
         raise NotImplementedError()
