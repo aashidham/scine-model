@@ -1,5 +1,6 @@
 import math
 import string
+import sys
 
 import chosen_platform
 import progression
@@ -66,34 +67,35 @@ def insert_scine(L, t_step, d, deformability, neher, R_pene, R_seal_total, N_com
     R_seal = [R_seal_total * neher * l / (d * math.pi) for l in L_env]
 
     for i in range(len(T)):
+        model_params = {
+            'exponent_low': 1,
+            'exponent_high': 5,
+            'N_compartments': N_compartments,
+            'alpha': 0.5,
+            'k': 0.14,
+            'R_seal': R_seal[i],
+            'A_intra': A_intra[i],
+            'A_env': A_env[i],
+            'A_membrane': A_membrane[i],
+            'A_extra': A_extra[i],
+            'R_pene': R_pene
+            }
         cir_path = model.generate(
-            'spike.short.dat',
+            'data/short-spike',
             'generated/model1_L@%s_d@%s_deformability@%s_neher@%s_Rpene@%s_Rseal@%s_compartments@%s_t@%s.cir' % (L, d, deformability, neher, R_pene, R_seal_total, N_compartments, T[i]),
-            {
-                'N_compartments': N_compartments,
-                'alpha': 0.5,
-                'k': 0.14,
-                'R_seal': R_seal[i],
-                'A_intra': A_intra[i],
-                'A_env': A_env[i],
-                'A_membrane': A_membrane[i],
-                'A_extra': A_extra[i],
-                'R_pene': R_pene
-                }
+            model_params
             )
-        #spice.run_ac(cir_path, {
-        #        'exponent_low': -5,
-        #        'exponent_high': 5
-        #        })
-        chosen_platform(spice.TransientSpice({'circuit': cir_path}, 1e-5, 0.005))
+        chosen_platform(spice.TransientSpice({'circuit': cir_path}, 0.00006, 0.006, **model_params))
 
 
 #fig = plt.figure()
 #for R_pene in progression.Linear(1e3, 1e13, 10):
 #    for deformability in [10000, 1000, 100, 10, 1]:
 #        for R_seal_total in progression.Linear(1e7, 1e12, 10):
-#insert_scine(2000e-9, 200e-9, 300e-9, deformability, 0.2, R_pene, R_seal_total, 2, model.simple)
-insert_scine(2000e-9, 200e-9, 300e-9, 5, 0.2, 1e10, 1e12, 2, model.simple)
+#            insert_scine(2000e-9, 200e-9, 300e-9, deformability, 0.2, R_pene, R_seal_total, 2, model.simple)
+#            print '.',
+#            sys.stdout.flush()
+insert_scine(2000e-9, 200e-9, 300e-9, 10, 0.2, 1e8, 1e10, 2, model.simple)
 
 #fig.show()
 #while True:

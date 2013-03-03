@@ -93,6 +93,8 @@ def generate(neuron_path, filename, params):
     # Acell.
     Acell = get_component('Acell', strip=True)
     assert len(Acell) == 4
+    #netlist.append('%s %s %s 1v ac' % tuple(Acell)[0:3])
+    # For DC:
     netlist.append('%s %%vd([%s, %s]) %s' % tuple(Acell))
     netlist.append('\n.model cell_potential filesource (file="%s", amploffset=[0], amplscale=[1])' % neuron_path)
 

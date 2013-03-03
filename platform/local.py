@@ -12,8 +12,9 @@ class LocalPlatform(platform.Platform):
         super(LocalPlatform, self).__init__()
 
     def execute(self):
+        print '%i tasks' % len(self._tasks)
         for t in self._tasks:
-            print 'outputs: %s' % ''.join(t.go())
+            print '%s %s %s %s' % (' '.join(map(str, t._args)), ' '.join(map(lambda kv: '%s=%s' % kv, t._kwargs.items())), ' '.join(t.in_files.values()), ''.join(t.go()))
 
     def file(self, suffix):
         fd, fn = tempfile.mkstemp(suffix)

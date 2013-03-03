@@ -16,15 +16,16 @@ class Task(object):
     sys_packages = []
     in_files = {}
 
-    def __init__(self, in_files, *args):
+    def __init__(self, in_files, *args, **kwargs):
         assert set(in_files.keys()) == set(self.in_files)
         self.in_files = in_files
         self._args = args
+        self._kwargs = kwargs
 
     def go(self):
         assert self.platform is not None
         self._setup()
-        out_fns = self._run(self.platform, *self._args)
+        out_fns = self._run(self.platform, *self._args, **self._kwargs)
         self._teardown()
         return out_fns
 
