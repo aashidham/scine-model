@@ -29,6 +29,8 @@ class Platform(object):
 
 def go(platform_cls):
 
+    platform = platform_cls()
+
     class Importer(object):
 
         def find_module(self, name, path):
@@ -38,7 +40,7 @@ def go(platform_cls):
                 return None
 
         def load_module(self, name):
-            return platform_cls()
+            return platform
 
     sys.meta_path.insert(0, Importer())
     parser = argparse.ArgumentParser(description=platform_cls.name)

@@ -13,12 +13,6 @@ class SpiceTask(task.PythonTask):
 
     in_files = ['circuit']
 
-    def derivatives(self, fn):
-        # Make plot.
-        plot_fn = self.platform.file('plot.png')
-        subprocess.check_call("gnuplot -e \"set term png; set output '%s'; plot '%s' using 1:2 with linespoints\"" % (plot_fn, fn), shell=True)
-        return [plot_fn]
-
 
 class TransientSpice(SpiceTask):
 
@@ -35,22 +29,35 @@ wrdata %s electrode_bus solution_bus cell_bus
 quit
 """ % (self['transient_step'], self['transient_max_T'], '.'.join(data.split('.')[:-1]))
         subprocess.Popen(['ngspice', '-p', self.in_files['circuit']], stdin=subprocess.PIPE, stdout=subprocess.PIPE, close_fds=True).communicate(inp)
-        return [data] + self.derivatives(data)
+        # Make plot.
+        plot_fn = self.platform.file('plot.png')
+        subprocess.check_call("gnuplot -e \"set term png; set output '%s'; plot '%s' using 1:2 with linespoints\"" % (plot_fn, data), shell=True)
+        return [data, plot_fn]
 
 
 class ACSpice(SpiceTask):
 
-    def _run(self, exponent_low, exponent_high, **kwargs):
-        exponent_low, exponent_high = map(float, [exponent_low, exponent_high])
+    params = {
+        'exponent_low': float,
+        'exponent_high': float
+        }
+
+    def _run(self):
         data = self.platform.file('the.data')
+        f_low = math.pow(10, self['exponent_low'])
+        f_high = math.pow(10, self['exponent_high'])
+        print f_low
+        print f_high
         inp = """
-ac dec 100 %(f_low)f %(f_high)f
-wrdata %(data_out)s electrode_bus solution_bus cell_bus
+ac dec %f %f %f
+wrdata %s mag(electrode_bus) phase(electrode_bus)
 quit
-""" % {
-            'f_high': math.pow(10, exponent_high),
-            'f_low': math.pow(10, exponent_low),
-            'data_out': '.'.join(data.split('.')[:-1])
-            }
+""" % (self['exponent_high'] - self['exponent_low'], f_low, f_high, '.'.join(data.split('.')[:-1]))
         subprocess.Popen(['ngspice', '-p', self.in_files['circuit']], stdin=subprocess.PIPE, stdout=subprocess.PIPE, close_fds=True).communicate(inp)
-        return [data]
+        # Make plot.
+        mag_plot_fn = self.platform.file('plot-mag.png')
+        subprocess.check_call("gnuplot -e \"set term png; set output '%s'; set logscale x; plot '%s' using 1:2 with linespoints\"" % (mag_plot_fn, data), shell=True)
+        phase_plot_fn = self.platform.file('plot-phase.png')
+        subprocess.check_call("gnuplot -e \"set term png; set output '%s'; set logscale x; plot '%s' using 3:4 with linespoints\"" % (phase_plot_fn, data), shell=True)
+        return [data, mag_plot_fn, phase_plot_fn]
+

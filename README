@@ -2,7 +2,15 @@
 
 python -m task spice TransientSpice --in-circuit generated/model1_L@2e-06_d@3e-07_deformability@10_neher@0.2_Rpene@100000000.0_Rseal@10000000000.0_compartments@2_t@0.cir --transient_step 0.00006 --transient_max_T .006
 
+
 # Same thing but prompted at runtime for what you want.
 
 python -m task spice TransientSpice --in-circuit generated/model1_L@2e-06_d@3e-07_deformability@10_neher@0.2_Rpene@100000000.0_Rseal@10000000000.0_compartments@2_t@0.cir
 
+
+# To run a scine insertion experiment,
+
+
+# To run all trials associated with the results,
+
+python -m platform.local all nang

@@ -3,8 +3,6 @@ import string
 import sys
 
 import chosen_platform
-import progression
-import model.simple
 import spice
 
 
@@ -41,27 +39,11 @@ def insert_scine(L, t_step, d, deformability, neher, R_pene, R_seal_total, N_com
     A_env = [A_per_L * l if l > 0 else 0 for l in L_env]
     A_extra = [A_per_L * l for l in L_extra]
 
-    #p = fig.add_subplot(2, 2, 1)
-    #p.set_title('Electrode length')
-    #p.ticklabel_format(style='sci', axis='x', scilimits=(0,0))
-    #p.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
-    #p.set_ylabel('m')
-    #p.plot(T, L_extra, 'r', T, L_intra, 'g', T, L_env, 'b')
-    #p.legend(['L_extra', 'L_intra', 'L_env'])
-
     # The surface area of the membrane enveloping the electrode over
     # time, where the enveloping membrane is a cylinder with diameter
     # = electrode diameter + 100nm, and with length = electrode
     # length.
     A_membrane = [math.pi * (d + 100e-9) * l for l in L_env]
-
-    #p = fig.add_subplot(2, 2, 2)
-    #p.set_title('Electrode surface area')
-    #p.ticklabel_format(style='sci', axis='x', scilimits=(0,0))
-    #p.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
-    #p.set_ylabel('m^2')
-    #p.plot(T, A_extra, 'r', T, A_intra, 'g', T, A_env, 'b', T, A_membrane, 'y')
-    #p.legend(['A_extra', 'A_intra', 'A_env', 'A_membrane'])
 
     # The seal resistance over time.
     R_seal = [R_seal_total * neher * l / (d * math.pi) for l in L_env]
@@ -85,18 +67,4 @@ def insert_scine(L, t_step, d, deformability, neher, R_pene, R_seal_total, N_com
             'generated/model1_L@%s_d@%s_deformability@%s_neher@%s_Rpene@%s_Rseal@%s_compartments@%s_t@%s.cir' % (L, d, deformability, neher, R_pene, R_seal_total, N_compartments, T[i]),
             model_params
             )
-        chosen_platform(spice.TransientSpice({'circuit': cir_path}, transient_step=0.00006, transient_max_T=0.006))
-
-
-#fig = plt.figure()
-#for R_pene in progression.Linear(1e3, 1e13, 10):
-#    for deformability in [10000, 1000, 100, 10, 1]:
-#        for R_seal_total in progression.Linear(1e7, 1e12, 10):
-#            insert_scine(2000e-9, 200e-9, 300e-9, deformability, 0.2, R_pene, R_seal_total, 2, model.simple)
-#            print '.',
-#            sys.stdout.flush()
-insert_scine(2000e-9, 200e-9, 300e-9, 10, 0.2, 1e8, 1e10, 2, model.simple)
-
-#fig.show()
-#while True:
-#    pass
+        chosen_platform(spice.ACSpice({'circuit': cir_path}, exponent_low=-5, exponent_high=5))
