@@ -12,20 +12,22 @@ DEVNULL = open(os.devnull, 'wb')
 
 class Task(object):
 
+    params = {}
+
     platform = None
     sys_packages = []
     in_files = {}
 
-    def __init__(self, in_files, *args, **kwargs):
+    def __init__(self, in_files, **kwargs):
         assert set(in_files.keys()) == set(self.in_files)
         self.in_files = in_files
-        self._args = args
-        self._kwargs = kwargs
+        assert set(kwargs) <= set(self.params), kwargs
+        self.params.update(kwargs)
 
     def go(self):
         assert self.platform is not None
         self._setup()
-        out_fns = self._run(self.platform, *self._args, **self._kwargs)
+        out_fns = self._run()
         self._teardown()
         return out_fns
 
@@ -34,7 +36,7 @@ class Task(object):
             if subprocess.call(['/usr/bin/dpkg-query', '-l', p], stdout=DEVNULL) != 0:
                 subprocess.check_call('sudo apt-get -y --force-yes -qq install %s' % p, shell=True)
 
-    def _run(self, platform):
+    def _run(self):
         raise NotImplementedError()
 
     def _teardown(self):
@@ -43,6 +45,13 @@ class Task(object):
     def to_command_line(self):
         in_files = ' '.join(map(lambda kv: '--in-%s=%s' % kv, self.in_files.items()))
         return 'python -m task %s %s %s %s' % (self.__module__, self.__class__.__name__, ' '.join(map(str, self._args)), in_files)
+
+    def __getitem__(self, name):
+        """ Get a parameter value. """
+        assert self.platform is not None
+        if type(self.params[name]) is type:
+            self.params[name] = self.platform.get_param(self.params[name], name)
+        return self.params[name]
 
 
 if __name__ == '__main__':
@@ -59,10 +68,21 @@ if __name__ == '__main__':
     cls = getattr(module, args.cls)
     for key in cls.in_files:
         parser.add_argument('--in-%s' % key, type=str, required=True)
+    task_args = []
+    for key in cls.params:
+        task_args.append(key)
+        if type(cls.params[key]) is type:
+            parser.add_argument('--%s' % key, type=cls.params[key])#, required=True)
+        else:
+            parser.add_argument('--%s' % key, type=type(cls.params[key]))
     args = parser.parse_args(sys.argv[1:])
 
     # Run the task!
-    t = cls(dict([(key, getattr(args, 'in_%s' % key)) for key in cls.in_files]), *args.params)
+    task_args = dict((a, getattr(args, a)) for a in task_args)
+    for k, v in task_args.items():
+        if v is None:
+            del task_args[k]
+    t = cls(dict([(key, getattr(args, 'in_%s' % key)) for key in cls.in_files]), **task_args)
     s = platform.local.LocalPlatform()
     s(t)
     s.execute()

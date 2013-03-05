@@ -85,7 +85,7 @@ def insert_scine(L, t_step, d, deformability, neher, R_pene, R_seal_total, N_com
             'generated/model1_L@%s_d@%s_deformability@%s_neher@%s_Rpene@%s_Rseal@%s_compartments@%s_t@%s.cir' % (L, d, deformability, neher, R_pene, R_seal_total, N_compartments, T[i]),
             model_params
             )
-        chosen_platform(spice.TransientSpice({'circuit': cir_path}, 0.00006, 0.006, **model_params))
+        chosen_platform(spice.TransientSpice({'circuit': cir_path}, transient_step=0.00006, transient_max_T=0.006))
 
 
 #fig = plt.figure()

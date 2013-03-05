@@ -5,6 +5,7 @@ import sys
 class Platform(object):
 
     name = None
+    _args = None
 
     def __init__(self):
         self._tasks = []
@@ -20,6 +21,9 @@ class Platform(object):
         raise NotImplementedError()
 
     def file(self):
+        raise NotImplementedError()
+
+    def get_param(self, ty, name):
         raise NotImplementedError()
 
 
@@ -42,4 +46,5 @@ def go(platform_cls):
     args = parser.parse_args(sys.argv[1:2])
     to_command = __import__(args.module, globals(), locals(), [], -1)
     to_command.chosen_platform.args(parser)
+    to_command.chosen_platform._args = parser.parse_args()
     to_command.chosen_platform.execute()
