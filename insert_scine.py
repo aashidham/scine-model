@@ -1,8 +1,6 @@
 import math
-import string
-import sys
 
-import chosen_platform
+import platform
 import spice
 
 
@@ -69,8 +67,7 @@ def insert_scine(L, t_step, d, deformability, neher, R_pene, R_seal_total, N_com
             }
         cir_path = model.generate(
             'data/short-spike',
-            'generated/model1_L@%s_d@%s_deformability@%s_neher@%s_Rpene@%s_Rseal@%s_compartments@%s_t@%s.cir' % (L, d, deformability, neher, R_pene, R_seal_total, N_compartments, T[i]),
+            platform.file('model1_L@%s_d@%s_deformability@%s_neher@%s_Rpene@%s_Rseal@%s_compartments@%s_t@%s.cir' % (L, d, deformability, neher, R_pene, R_seal_total, N_compartments, T[i])),
             dict(model_params)
             )
-        #print model_params
-        chosen_platform(spice.ACSpice({'circuit': cir_path}, exponent_low=-5, exponent_high=5, params=dict(model_params)))
+        spice.ac_analysis(cir_path, -5, 5)

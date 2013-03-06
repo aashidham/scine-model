@@ -1,6 +1,3 @@
 *~
 *.pyc
 \#*\#
-data/
-env/
-generated/
