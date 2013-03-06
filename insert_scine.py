@@ -50,8 +50,6 @@ def insert_scine(L, t_step, d, deformability, neher, R_pene, R_seal_total, N_com
 
     for i in range(len(T)):
         model_params = {
-            'exponent_low': 1,
-            'exponent_high': 5,
             'N_compartments': N_compartments,
             'alpha': 0.5,
             'k': 0.14,
@@ -60,11 +58,19 @@ def insert_scine(L, t_step, d, deformability, neher, R_pene, R_seal_total, N_com
             'A_env': A_env[i],
             'A_membrane': A_membrane[i],
             'A_extra': A_extra[i],
-            'R_pene': R_pene
+            'R_pene': R_pene,
+            'L': L,
+            'd': d,
+            'deformability': deformability,
+            'neher': neher,
+            'R_seal_total': R_seal_total,
+            'N_compartments': N_compartments,
+            't': T[i]
             }
         cir_path = model.generate(
             'data/short-spike',
             'generated/model1_L@%s_d@%s_deformability@%s_neher@%s_Rpene@%s_Rseal@%s_compartments@%s_t@%s.cir' % (L, d, deformability, neher, R_pene, R_seal_total, N_compartments, T[i]),
-            model_params
+            dict(model_params)
             )
-        chosen_platform(spice.ACSpice({'circuit': cir_path}, exponent_low=-5, exponent_high=5))
+        #print model_params
+        chosen_platform(spice.ACSpice({'circuit': cir_path}, exponent_low=-5, exponent_high=5, params=dict(model_params)))

@@ -22,6 +22,7 @@ class Task(object):
         assert set(in_files.keys()) == set(self.in_files)
         self.in_files = in_files
         assert set(kwargs) <= set(self.params), kwargs
+        self.params = dict(self.params)
         self.params.update(kwargs)
 
     def go(self):
