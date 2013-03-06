@@ -5,18 +5,25 @@ import sys
 class Platform(object):
 
     @classmethod
-    def change_root(cls, path):
-        cls._root = path
-        os.mkdir(cls._root)
+    def set_root(cls, path):
+        os.makedirs(path)
+        cls._root = list(os.path.split(path))
+        cls._path = []
+
+    @classmethod
+    def set_path(cls, path):
+        cls._path = list(filter(None, os.path.split(path)))
+        os.makedirs(os.path.join(*(cls._root + cls._path)))
 
     @classmethod
     def file(cls, fn):
-        fn = '%s/%s' % (cls._root, fn)
+        fn = os.path.join(*(cls._root + cls._path + [fn]))
+        print fn
         assert not os.path.exists(fn)
         return fn
 
 
-Platform.change_root('derp')
+Platform.set_root('all')
 
 
 class Importer(object):
@@ -38,8 +45,10 @@ import model.simple
 import progression
 
 
+i = 0
 for R_pene in progression.Linear(1e3, 1e13, 10):
     for deformability in [10000, 1000, 100, 10, 1]:
         for R_seal_total in progression.Linear(1e7, 1e12, 10):
-            Platform.change_root('derp/thing')
+            i += 1
+            Platform.set_root('all/trial=%i' % i)
             insert_scine.insert_scine(2000e-9, 200e-9, 300e-9, deformability, 0.2, R_pene, R_seal_total, 2, model.simple)
