@@ -1,7 +1,7 @@
 import math
 
-import platform
 import spice
+import the_platform
 
 
 def insert_scine(L, t_step, d, deformability, neher, R_pene, R_seal_total, N_compartments, model):
@@ -47,7 +47,7 @@ def insert_scine(L, t_step, d, deformability, neher, R_pene, R_seal_total, N_com
     R_seal = [R_seal_total * neher * l / (d * math.pi) for l in L_env]
 
     for i in range(len(T)):
-        platform.set_path('t=%i' % i)
+        the_platform.set_path('t=%i' % i)
         model_params = {
             'N_compartments': N_compartments,
             'alpha': 0.5,
@@ -68,7 +68,7 @@ def insert_scine(L, t_step, d, deformability, neher, R_pene, R_seal_total, N_com
             }
         cir_path = model.generate(
             'data/short-spike',
-            platform.file('model1_L@%s_d@%s_deformability@%s_neher@%s_Rpene@%s_Rseal@%s_compartments@%s_t@%s.cir' % (L, d, deformability, neher, R_pene, R_seal_total, N_compartments, T[i])),
+            the_platform.file('model1_L@%s_d@%s_deformability@%s_neher@%s_Rpene@%s_Rseal@%s_compartments@%s_t@%s.cir' % (L, d, deformability, neher, R_pene, R_seal_total, N_compartments, T[i])),
             dict(model_params)
             )
         spice.ac_analysis(cir_path, -5, 5)
