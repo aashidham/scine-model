@@ -10,7 +10,7 @@ def transient_analysis(circuit_fn, transient_step, transient_max_T):
     data = the_platform.file('the.data')
     inp = """
 tran %f %f
-wrdata %s electrode_bus solution_bus cell_bus
+wrdata '%s' electrode_bus solution_bus cell_bus
 quit
 """ % (transient_step, transient_max_T, '.'.join(data.split('.')[:-1]))
     subprocess.Popen(['ngspice', '-p', circuit_fn], stdin=subprocess.PIPE, stdout=subprocess.PIPE, close_fds=True).communicate(inp)
@@ -30,7 +30,7 @@ def ac_analysis(circuit_fn, exponent_low, exponent_high):
     f_high = math.pow(10, exponent_high)
     inp = """
 ac dec %f %f %f
-wrdata %s mag(electrode_bus) phase(electrode_bus)
+wrdata '%s' mag(electrode_bus) phase(electrode_bus)
 quit
 """ % (exponent_high - exponent_low, f_low, f_high, '.'.join(data.split('.')[:-1]))
     subprocess.Popen(['ngspice', '-p', circuit_fn], stdin=subprocess.PIPE, stdout=subprocess.PIPE, close_fds=True).communicate(inp)

@@ -23,7 +23,7 @@ C 43300 49400 1 0 0 resistor-1.sym
 T 43600 49800 5 10 0 0 0 0 1
 device=RESISTOR
 T 43500 49700 5 10 1 1 0 0 1
-refdes=Rpene
+refdes=R_pene
 }
 N 42900 50600 42900 50500 4
 C 40900 48000 1 90 0 resistor-1.sym
@@ -61,7 +61,7 @@ C 45000 49400 1 0 0 resistor-1.sym
 T 45300 49800 5 10 0 0 0 0 1
 device=RESISTOR
 T 45200 49700 5 10 1 1 0 0 1
-refdes=Rseal_i
+refdes=R_seal_i
 }
 C 46400 49600 1 90 0 resistor-2.sym
 {
@@ -80,7 +80,7 @@ C 40900 46100 1 90 0 resistor-1.sym
 T 40500 46400 5 10 0 0 90 0 1
 device=RESISTOR
 T 40600 46300 5 10 1 1 90 0 1
-refdes=Rsoln
+refdes=Rbath
 }
 N 40800 45900 40800 46100 4
 C 40700 45600 1 0 0 gnd-1.sym
@@ -124,14 +124,14 @@ C 47300 49500 1 90 0 resistor-1.sym
 T 46900 49800 5 10 0 0 90 0 1
 device=RESISTOR
 T 47000 49700 5 10 1 1 90 0 1
-refdes=Rpara
+refdes=RStray
 }
 C 48200 49500 1 90 0 capacitor-1.sym
 {
 T 47500 49700 5 10 0 0 90 0 1
 device=CAPACITOR
 T 47700 49700 5 10 1 1 90 0 1
-refdes=Cpara
+refdes=CStray
 T 47300 49700 5 10 0 0 90 0 1
 symversion=0.1
 }

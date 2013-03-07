@@ -1,7 +1,24 @@
+class Constant(object):
+
+    def __init__(self, constant):
+        self._c = constant
+
+    def __iter__(self):
+        return self
+
+    def next(self):
+        if self._c is None:
+            raise StopIteration()
+        else:
+            c = self._c
+            self._c = None
+            return c
+
+
 class Linear(object):
 
     def __init__(self, low, high, n_samples):
-        assert high > low
+        assert high > low, '%s <= %s' % (high, low)
         self._low = float(low)
         self._high = float(high)
         assert (type(n_samples) == int) and (n_samples > 1)
@@ -18,3 +35,9 @@ class Linear(object):
             return v
         else:
             raise StopIteration()
+
+
+class Logarithmic(Linear):
+
+    def next(self):
+        return super(Logarithmic, self).next()
