@@ -12,7 +12,7 @@ import from_csv
 
 if __name__ == '__main__':
 
-    root = '/home/edmund/Dropbox/ed and matt'
+    root = '/home/matt/Dropbox/ed and matt'
 
     print '** contents of dropbox/input:'
     for fn in os.listdir(os.path.join(*([root, 'input']))):
