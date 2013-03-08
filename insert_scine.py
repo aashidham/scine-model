@@ -1,4 +1,4 @@
-import pprint
+import json
 import math
 
 import spice
@@ -65,8 +65,7 @@ def insert_scine(model, **params):
             }
         print derived_params
         f = open(the_platform.file('derived_params.json'), 'w')
-        pp = pprint.PrettyPrinter(indent=4)
-        f.write(pp.pformat(derived_params))
+        f.write(json.dumps(derived_params))
         f.close()
 
         # Mix together all params, the model will need them all. And

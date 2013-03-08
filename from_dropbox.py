@@ -1,3 +1,4 @@
+import json
 import os
 import os.path
 
@@ -25,7 +26,7 @@ if __name__ == '__main__':
             break
         print '"%s" aint no file I ever heard of' % fn
 
-    out_dir = '.'.join(base_fn.split('.')[:-1])
-    platform.Platform.set_root(os.path.join(*([root, 'output', out_dir])))
+    out_dir = os.path.join(*([root, 'output', '.'.join(base_fn.split('.')[:-1])]))
+    platform.Platform.set_root(out_dir)
 
     from_csv.run(fn)

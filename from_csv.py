@@ -1,6 +1,6 @@
 import csv
+import json
 import os.path
-import pprint
 import sys
 import unittest
 
@@ -52,14 +52,13 @@ def run(fn):
         pass
 
     # For all samples,
-    pp = pprint.PrettyPrinter(indent=4)
     root = the_platform._root
     for i, sample in enumerate(samples):
         the_platform.set_root(os.path.join(*(root + ['trial=%i' % i])))
 
         # store the params to be used in the simulation,
         f = open(the_platform.file('parameters.json'), 'w')
-        f.write(pp.pformat(sample))
+        f.write(json.dumps(sample))
         f.close()
 
         # and run the simulation.
