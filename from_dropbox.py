@@ -8,6 +8,7 @@ platform.install()
 
 
 import from_csv
+import stitch
 
 
 if __name__ == '__main__':
@@ -30,3 +31,5 @@ if __name__ == '__main__':
     platform.Platform.set_root(out_dir)
 
     from_csv.run(fn)
+
+    stitch.stitch(out_dir)
