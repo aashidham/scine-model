@@ -56,7 +56,7 @@ def generate(neuron_path, filename, params):
     # Make the CPEs.
     netlist.extend([''] + model.ladder_cpe.generate('extra_cpe', 50, params['CPE_alpha'], params['CPE_k'] / (params['A_extra'] + 1e-30)))
     netlist.extend([''] + model.ladder_cpe.generate('intra_cpe', 50, params['CPE_alpha'], params['CPE_k'] / (params['A_intra'] + 1e-30)))
-    netlist.extend([''] + model.ladder_cpe.generate('sheathed_cpe', 50, params['CPE_alpha'], params['CPE_k'] / (params['A_env'] + 1e-30)))
+    netlist.extend([''] + model.ladder_cpe.generate('sheathed_cpe', 50, params['CPE_alpha'], params['CPE_k'] * params['compartments'] / (params['A_env'] + 1e-30)))
 
     # Find variables.
     values = {
