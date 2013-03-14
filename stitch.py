@@ -4,7 +4,7 @@ import re
 import sys
 
 
-def stitch(path):
+def stitch(path, fn_stitched):
 
     samples = []
 
@@ -54,9 +54,11 @@ def stitch(path):
     # Order the first row's keys, that's the ordering for the rest of
     # the data.
     key_order = sorted(samples[0].keys())
-    print '\t'.join(key_order)
+    f = open(fn_stitched, 'w')
+    print >> f, '\t'.join(key_order)
     for s in samples:
-        print '\t'.join([str(s[k]) for k in key_order])
+        print >> f, '\t'.join([str(s[k]) for k in key_order])
+    f.close()
 
 
 if __name__ == '__main__':

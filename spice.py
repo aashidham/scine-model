@@ -13,7 +13,7 @@ tran %f %f
 wrdata '%s' electrode_bus solution_bus cell_bus
 quit
 """ % (transient_step, transient_max_T, '.'.join(data.split('.')[:-1]))
-    subprocess.Popen(['ngspice', '-p', circuit_fn], stdin=subprocess.PIPE, stdout=subprocess.PIPE, close_fds=True).communicate(inp)
+    subprocess.Popen(['ngspice', '-p', circuit_fn], stdin=subprocess.PIPE, close_fds=True).communicate(inp)
 
     # Plot <t> <voltage at electrode_bus>.
     plot_fn = the_platform.file('plot.png')
@@ -33,7 +33,10 @@ ac dec %f %f %f
 wrdata '%s' mag(electrode_bus) phase(electrode_bus)
 quit
 """ % (exponent_high - exponent_low, f_low, f_high, '.'.join(data.split('.')[:-1]))
-    subprocess.Popen(['ngspice', '-p', circuit_fn], stdin=subprocess.PIPE, stdout=subprocess.PIPE, close_fds=True).communicate(inp)
+    f = open(the_platform.file('spice.input'), 'w')
+    f.write(inp)
+    f.close()
+    subprocess.Popen(['ngspice', '-p', circuit_fn], stdin=subprocess.PIPE, close_fds=True).communicate(inp)
 
     # Plot <f> <gain at electrode_bus>, and <f> <phase at electrode_bus>.
     mag_plot_fn = the_platform.file('plot-mag.png')

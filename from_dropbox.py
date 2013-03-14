@@ -32,4 +32,4 @@ if __name__ == '__main__':
 
     from_csv.run(fn)
 
-    stitch.stitch(out_dir)
+    stitch.stitch(out_dir, os.path.join(out_dir, 'stitched.csv'))
