@@ -1,3 +1,6 @@
+import math
+
+
 class Constant(object):
 
     def __init__(self, constant):
@@ -40,7 +43,9 @@ class Linear(object):
 class Logarithmic(Linear):
 
     def next(self):
-        r = (self._high - self._low) ** (1.0 / self._n_samples)
-        v = self._low + (r ** (1 + self._i))
-        super(Logarithmic, self).next()
-        return v
+        if self._i <= self._n_samples:
+            v = 10.0 ** (math.log(self._low, 10) + ((math.log(self._high, 10) - math.log(self._low, 10)) * self._i / float(self._n_samples)))
+            self._i += 1
+            return v
+        else:
+            raise StopIteration()
