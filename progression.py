@@ -40,4 +40,7 @@ class Linear(object):
 class Logarithmic(Linear):
 
     def next(self):
-        return super(Logarithmic, self).next()
+        r = (self._high - self._low) ** (1.0 / self._n_samples)
+        v = self._low + (r ** (1 + self._i))
+        super(Logarithmic, self).next()
+        return v
