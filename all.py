@@ -11,9 +11,24 @@ import progression
 
 
 i = 0
-for R_pene in progression.Linear(1e3, 1e13, 10):
-    for deformability in [10000, 1000, 100, 10, 1]:
-        for R_seal_total in progression.Linear(1e7, 1e12, 10):
-            i += 1
-            platform.Platform.set_root('all/trial=%i' % i)
-            insert_scine.insert_scine(2000e-9, 200e-9, 300e-9, deformability, 0.2, R_pene, R_seal_total, 2, model.simple)
+for deformability in [10000, 1000, 100, 10, 1]:
+    i += 1
+    platform.Platform.set_root('all/trial=%i' % i)
+    params = {
+        'Length': 2000e-9,
+        'Nsteps': 10,
+        'Dia': 300e-9,
+        'Deform': deformability,
+        'Neher': 1e9,
+        'Mem_cond': 10,
+        'compartments': 2,
+        'CStray': 1e-12,
+        'RStray': 1e12,
+        'Cwholecell': 2e-10,
+        'Rwholecell': 1e8,
+        'CPE_alpha': 0.5,
+        'CPE_k': 0.159,
+        'R_pene': 1e9,
+        'Rbath': 200
+    }
+    insert_scine.insert_scine(model.simple, **params)
