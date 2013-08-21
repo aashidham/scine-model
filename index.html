@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Test</title>
+<script src="http://code.jquery.com/jquery-1.10.0.js"></script>
+<script>
+function validateEmail(email) 
+{
+    var re = /\S+@\S+/;
+    return re.test(email);
+}
+
+$(function(){
+	$("#submit").click(function(){
+		if(!validateEmail($("#email").val()))
+		{
+			$("#fill").text("Please enter a valid email!");
+		}
+		else
+		{
+			$.post("sendparams",{"params":$("#params").val(),"email":$("#email").val()})
+			.done(function(data)
+			{
+				$("#fill").text("Successfully submitted! You have id "+data+" and your data will be emailed to "+$("#email").val());
+			});
+		}
+	});
+});
+</script>
+</head>
+<body>
+Params:
+<br/><textarea id="params" cols=40 rows=20>
+Neher,1e+08
+Deform,10000
+Nsteps,1
+CStray,4e-12
+RStray,3e+11
+Cwholecell,2e-10
+Rwholecell,1e+08
+Length,2e-06
+Dia,3.18e-07
+CPE_alpha,0.5
+CPE_k,0.0003
+R_pene,1e+15
+Mem_cond,0.3,120,10,1
+Rbath,200
+compartments,8
+</textarea><br/>
+Email:<br/>
+<input id="email" type="text"></input>
+<br/>
+<button id="submit">Submit!</button>
+
+<div id="fill"></div>
+</body>
+
+</html>
