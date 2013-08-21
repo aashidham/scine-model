@@ -6,19 +6,6 @@ from time import sleep
 import json
 import os
 
-"""
-def async_email(sid,email,params):
-	platform.Platform.set_root("/home/cloud/scine-model/"+str(sid))
-	f = open(str(sid)+"/"+str(sid)+".csv","wb")
-	f.write(params)
-	f.close()
-	#from_csv.run(str(sid)+"/"+str(sid)+".csv")
-	print sid,the_platform._root
-
-def async_email_caller(sid,email,params):
-	Tasklet.new(async_email)(sid,email,params)
-"""
-
 #this is thread-unsafe (but this is a single thread server, so don't make it multithreaded)
 #I'm not sure how this doesn't complain about never closing the file
 def application(environ, start_response):

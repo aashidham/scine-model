@@ -2,6 +2,7 @@ from concurrence.io import BufferedStream, Socket
 from concurrence import dispatch, Tasklet
 from time import sleep
 import pickle
+import email_send2
 
 import platform
 platform.install()
@@ -22,7 +23,7 @@ def handler(client_socket):
 	f.write(params)
 	f.close()
 	from_csv.run(str(sid)+"/"+str(sid)+".csv")
-	
+	email_send2.send_mail(email,str(sid),str(sid))
 
     
 
