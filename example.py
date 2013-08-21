@@ -1,7 +1,7 @@
 from concurrence.io import BufferedStream, Socket
 from concurrence import dispatch, Tasklet
 from time import sleep
-import pickle
+import pickle, shutil
 import email_send2
 
 import platform
@@ -22,9 +22,12 @@ def handler(client_socket):
 	f = open(str(sid)+"/"+str(sid)+".csv","wb")
 	f.write(params)
 	f.close()
-	from_csv.run(str(sid)+"/"+str(sid)+".csv")
-	email_send2.send_mail(email,str(sid),str(sid))
-
+	try:
+		from_csv.run(str(sid)+"/"+str(sid)+".csv")
+		email_send2.send_mail(email,str(sid),str(sid))
+	except Exception,e:
+		email_send2.send_error(email,str(type(e))+" "+str(e),str(sid))
+	#shutil.rmtree(sid)
     
 
 def start():
@@ -37,4 +40,4 @@ def start():
 		Tasklet.new(handler)(client_socket)
 
 if __name__ == '__main__':
-    dispatch(start)
+	dispatch(start)
