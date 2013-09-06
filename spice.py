@@ -36,12 +36,3 @@ quit
     f = open(the_platform.file('spice.input'), 'w')
     f.write(inp)
     f.close()
-    subprocess.Popen(['ngspice', '-p', circuit_fn], stdin=subprocess.PIPE, close_fds=True).communicate(inp)
-
-    # Plot <f> <gain at electrode_bus>, and <f> <phase at electrode_bus>.
-    mag_plot_fn = the_platform.file('plot-mag.png')
-    subprocess.check_call("gnuplot -e \"set term png; set output '%s'; set logscale x; plot '%s' using 1:2 with linespoints\"" % (mag_plot_fn, data), shell=True)
-    phase_plot_fn = the_platform.file('plot-phase.png')
-    subprocess.check_call("gnuplot -e \"set term png; set output '%s'; set logscale x; plot '%s' using 3:4 with linespoints\"" % (phase_plot_fn, data), shell=True)
-
-    return [data, mag_plot_fn, phase_plot_fn]

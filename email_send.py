@@ -112,7 +112,8 @@ must be running an SMTP server.
         server.starttls()
         server.ehlo()
         server.login('labmelosh@gmail.com','scine-model')
-        server.sendmail(opts.sender, opts.recipients, composed)
+        server.sendmail(opts.sender, opts.recip
+        ients, composed)
         server.quit()
 
 

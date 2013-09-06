@@ -1,8 +1,9 @@
 import csv
 import json
-import os.path
+import os
 import sys
 import unittest
+import subprocess
 
 import insert_scine
 import model.simple
@@ -64,7 +65,23 @@ def run(fn):
         # and run the simulation.
         print sample
         insert_scine.insert_scine(model.simple, **sample)
+    
+    root = "/".join(root)
+    
+    #incredibly hacky, but subprocess.check_call() couldn't work with this bash command
+    cmd = "~/parallel ngspice -p %s/trial={1}/t={2}/model1.cir '<' %s/trial={1}/t={2}/spice.input ::: {0..%i} ::: {0..%i}" % (root,root,len(samples),samples[0]['Nsteps'])
+    f = open("para.sh","wb")
+    f.write(cmd)
+    f.close()
+    os.system("/bin/bash ./para.sh")
 
+    for i in range(len(samples)):
+    	for j in range(int(samples[0]['Nsteps'])+1):
+			mag_plot_fn = root + "/trial=%i/t=%i/plot-mag.png" % (i,j)
+			phase_plot_fn = root + "/trial=%i/t=%i/plot-phase.png" % (i,j)
+			data = root + "/trial=%i/t=%i/the.data" % (i,j)
+			subprocess.check_call("gnuplot -e \"set term png; set output '%s'; set logscale x; plot '%s' using 1:2 with linespoints\"" % (mag_plot_fn, data), shell=True)
+			subprocess.check_call("gnuplot -e \"set term png; set output '%s'; set logscale x; plot '%s' using 3:4 with linespoints\"" % (phase_plot_fn, data), shell=True)
 
 if __name__ == '__main__':
     assert len(sys.argv) == 2
