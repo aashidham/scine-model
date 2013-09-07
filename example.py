@@ -18,7 +18,7 @@ def handler(client_socket):
 	text = f.read()
 	[sid,email,params] = pickle.loads(text)
     
-	platform.Platform.set_root("/home/cloud/scine-model/"+str(sid))
+	platform.Platform.set_root("/home/ubuntu/scine-model/"+str(sid))
 	f = open(str(sid)+"/"+str(sid)+".csv","wb")
 	f.write(params)
 	f.close()

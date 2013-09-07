@@ -55,25 +55,18 @@ def run(fn):
     # For all samples,
     root = the_platform._root
     for i, sample in enumerate(samples):
-        the_platform.set_root(os.path.join(*(root + ['trial=%i' % i])))
-
-        # store the params to be used in the simulation,
-        f = open(the_platform.file('parameters.json'), 'w')
-        f.write(json.dumps(sample))
-        f.close()
-
-        # and run the simulation.
-        print sample
-        insert_scine.insert_scine(model.simple, **sample)
+		the_platform.set_root(os.path.join(*(root + ['trial=%i' % i])))
+		# store the params to be used in the simulation,
+		f = open(the_platform.file('parameters.json'), 'w')
+		f.write(json.dumps(sample))
+		f.close()
+		# and run the simulation.
+		print sample
+		insert_scine.insert_scine(model.simple, **sample)
     
     root = "/".join(root)
     
-    #incredibly hacky, but subprocess.check_call() couldn't work with this bash command
-    cmd = "~/parallel ngspice -p %s/trial={1}/t={2}/model1.cir '<' %s/trial={1}/t={2}/spice.input ::: {0..%i} ::: {0..%i}" % (root,root,len(samples),samples[0]['Nsteps'])
-    f = open("para.sh","wb")
-    f.write(cmd)
-    f.close()
-    os.system("/bin/bash ./para.sh")
+    os.system('find %s -type d -links 2 | parallel -v  --gnu --sshlogin 32/ubuntu@ec2-54-200-16-9.us-west-2.compute.amazonaws.com --transfer --return {}/the.data "ngspice -p {}/model1.cir < {}/spice.input"' % root)
 
     for i in range(len(samples)):
     	for j in range(int(samples[0]['Nsteps'])+1):

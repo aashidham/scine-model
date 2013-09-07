@@ -15,7 +15,7 @@ def generate(neuron_path, filename, params):
         p = subprocess.Popen(['gnetlist', '-n', '-g', 'spice', fn, '-o', netlist_fn], stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True)
         s, err = p.communicate()
         p.wait()
-        assert err == '', err
+        #assert err == '', err
         return netlist_fn
     model_fn = run_netlister('model/simple.sch')
 
